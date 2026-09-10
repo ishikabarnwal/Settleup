@@ -45,7 +45,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiError> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
-        return build(HttpStatus.FORBIDDEN, "You do not have access to this resource", request);
+        String message = ex.getMessage() == null || ex.getMessage().isBlank()
+                ? "You do not have access to this resource"
+                : ex.getMessage();
+        return build(HttpStatus.FORBIDDEN, message, request);
     }
 
     @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class})
