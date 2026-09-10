@@ -1,4 +1,4 @@
-package com.Ishika.settleup_backend;
+package com.ishika.settleupbackend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
