@@ -4,40 +4,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.ishika.settleupbackend.group.GroupRepository;
-import com.ishika.settleupbackend.user.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.web.servlet.MockMvc;
-import tools.jackson.databind.ObjectMapper;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-class GroupApiTests {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private GroupRepository groupRepository;
-
-    private TestApiClient api;
-
-    @BeforeEach
-    void setUp() {
-        groupRepository.deleteAll();
-        userRepository.deleteAll();
-        api = new TestApiClient(mockMvc, objectMapper);
-    }
+class GroupApiTests extends ApiTestBase {
 
     @Test
     void creatorBecomesTheFirstMember() throws Exception {

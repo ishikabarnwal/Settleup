@@ -5,34 +5,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.ishika.settleupbackend.user.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-class AuthFlowTests {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @BeforeEach
-    void clearUsers() {
-        userRepository.deleteAll();
-    }
+class AuthFlowTests extends ApiTestBase {
 
     @Test
     void registersThenLogsInAndReadsOwnProfile() throws Exception {
