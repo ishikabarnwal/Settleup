@@ -2,6 +2,7 @@ package com.ishika.settleupbackend;
 
 import com.ishika.settleupbackend.expense.ExpenseRepository;
 import com.ishika.settleupbackend.group.GroupRepository;
+import com.ishika.settleupbackend.settlement.SettlementRepository;
 import com.ishika.settleupbackend.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,10 +35,14 @@ abstract class ApiTestBase {
     @Autowired
     protected ExpenseRepository expenseRepository;
 
+    @Autowired
+    protected SettlementRepository settlementRepository;
+
     protected TestApiClient api;
 
     @BeforeEach
     void resetDatabase() {
+        settlementRepository.deleteAll();
         expenseRepository.deleteAll();
         groupRepository.deleteAll();
         userRepository.deleteAll();
