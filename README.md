@@ -1,68 +1,64 @@
 # SettleUp Backend
 
-A REST API for splitting shared expenses within a group and working out who owes whom.
-Groups have members, members add expenses that get split between them, and the API keeps
-track of everyone's balance and the payments made to square up.
+A REST API for **splitting shared expenses and managing group balances**. Users can create groups, add expenses, track who owes whom, and record settlements.
 
 ## Requirements
 
-- Java 17 or newer
-- Maven (the wrapper `mvnw` / `mvnw.cmd` is included, so no separate install needed)
-- Docker, only if you want to run against Postgres locally
+- Java 17+
+- Maven (Maven Wrapper included)
+- Docker (only required for local PostgreSQL)
 
 ## Configuration
 
-Everything sensitive is read from environment variables. `application.properties` only holds
-placeholders with local defaults, so nothing real is committed.
+Sensitive values are provided through environment variables.
 
-| Variable | Required | Default | Notes |
-| --- | --- | --- | --- |
-| `JWT_SECRET` | yes | none | Signing key for tokens. Must be at least 32 characters or the app refuses to start. |
-| `DB_URL` | no | `jdbc:postgresql://localhost:5432/settleup` | JDBC URL. |
-| `DB_USERNAME` | no | `settleup` | Database user. |
-| `DB_PASSWORD` | no | `settleup` | Database password. Matches the default in `docker-compose.yml`. |
+| Variable | Required | Default |
+|---|---|---|
+| `JWT_SECRET` | Yes* | — |
+| `DB_URL` | No | `jdbc:postgresql://localhost:5432/settleup` |
+| `DB_USERNAME` | No | `settleup` |
+| `DB_PASSWORD` | No | `settleup` |
 
-Copy `.env.example` to `.env` for your own values. `.env` is gitignored.
+\* `JWT_SECRET` is required when running with PostgreSQL and must be at least 32 characters long.
 
-Tokens are valid for 12 hours (`app.jwt.expiration`) and are issued by `settleup`
-(`app.jwt.issuer`). Change either in `application.properties` if you need to.
+Copy `.env.example` to `.env` and add your values.
 
-## Running locally with H2
+## Run Locally
 
-The `dev` profile uses an in-memory H2 database, so you don't need Postgres to get started.
-It ships with a throwaway signing key, so `JWT_SECRET` is optional here.
+### Using H2
+
+The `dev` profile uses an in-memory database, so PostgreSQL is not required.
 
 ```bash
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-On Windows use `mvnw.cmd` instead of `./mvnw`.
+Windows:
 
-The API comes up on http://localhost:8080. The database is wiped every restart.
+```bash
+mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev
+```
 
-## Running with Postgres
+API: `http://localhost:8080`
 
-Start the database:
+> H2 data is cleared whenever the application restarts.
+
+### Using PostgreSQL
+
+Start PostgreSQL with Docker:
 
 ```bash
 docker compose up -d
 ```
 
-That brings up Postgres 17 on port 5432 with the database, user and password all set to
-`settleup`, and keeps the data in a named volume between restarts.
-
-Then run the app with a signing key:
+Set your JWT secret and start the application:
 
 ```bash
-export JWT_SECRET=some-long-random-string-at-least-32-chars
+export JWT_SECRET=your-long-random-secret
 ./mvnw spring-boot:run
 ```
 
-The schema is created and updated by Hibernate (`spring.jpa.hibernate.ddl-auto=update`),
-so there is no migration step to run.
-
-To stop the database, `docker compose down`, or `docker compose down -v` to throw the data
-away as well.
+Hibernate automatically manages the database schema.
 
 ## Tests
 
@@ -70,145 +66,143 @@ away as well.
 ./mvnw verify
 ```
 
-Tests run against in-memory H2 and don't need Postgres or Docker.
+Tests use H2 and do not require Docker or PostgreSQL.
 
-## API
+## API Overview
 
-Every endpoint except `/health`, `/api/auth/register` and `/api/auth/login` needs a bearer
-token:
+All endpoints except `/health`, `/api/auth/register`, and `/api/auth/login` require:
 
-```
+```text
 Authorization: Bearer <token>
 ```
 
-Both auth endpoints return a token, so register or log in first and reuse it.
+### Authentication
 
-### Auth
-
-| Method | Path | Description |
-| --- | --- | --- |
-| POST | `/api/auth/register` | Create an account and get a token back. |
-| POST | `/api/auth/login` | Sign in with email and password, returns a token. |
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/auth/register` | Create an account |
+| POST | `/api/auth/login` | Login and receive a token |
 
 ### Users
 
-| Method | Path | Description |
-| --- | --- | --- |
-| GET | `/api/users/me` | The signed-in user's own profile. |
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api/users/me` | Get current user |
 
 ### Groups
 
-| Method | Path | Description |
-| --- | --- | --- |
-| POST | `/api/groups` | Create a group. The creator is added as the first member. |
-| GET | `/api/groups` | Every group the caller belongs to. |
-| GET | `/api/groups/{groupId}` | Group details, including the member list. |
-| POST | `/api/groups/{groupId}/members` | Add an existing user to the group by email. |
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/groups` | Create a group |
+| GET | `/api/groups` | List user's groups |
+| GET | `/api/groups/{groupId}` | Get group details |
+| POST | `/api/groups/{groupId}/members` | Add a member |
 
 ### Expenses
 
-| Method | Path | Description |
-| --- | --- | --- |
-| POST | `/api/groups/{groupId}/expenses` | Add an expense and split it between members. |
-| GET | `/api/groups/{groupId}/expenses` | All expenses in the group, newest first. |
-| GET | `/api/groups/{groupId}/expenses/{expenseId}` | A single expense with its shares. |
+| Method | Endpoint | Purpose |
+|---|---|---|
+| POST | `/api/groups/{groupId}/expenses` | Add an expense |
+| GET | `/api/groups/{groupId}/expenses` | List expenses |
+| GET | `/api/groups/{groupId}/expenses/{expenseId}` | Get expense details |
 
-### Balances and settlements
+### Balances & Settlements
 
-| Method | Path | Description |
-| --- | --- | --- |
-| GET | `/api/groups/{groupId}/balances` | Each member's net position in the group. |
-| POST | `/api/groups/{groupId}/settlements` | Record a payment from one member to another. |
-| GET | `/api/groups/{groupId}/settlements` | Payment history for the group. |
-| GET | `/api/groups/{groupId}/settlements/suggested` | Shortest set of payments that clears the group. |
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/api/groups/{groupId}/balances` | View member balances |
+| POST | `/api/groups/{groupId}/settlements` | Record a payment |
+| GET | `/api/groups/{groupId}/settlements` | View payment history |
+| GET | `/api/groups/{groupId}/settlements/suggested` | Get suggested payments |
 
 ### Health
 
-| Method | Path | Description |
-| --- | --- | --- |
-| GET | `/health` | Liveness check, no auth needed. |
+`GET /health` — application health check.
 
-## Splitting rules
+## Expense Splitting
 
-An expense is either an `EQUAL` or an `EXACT` split.
+SettleUp supports two split types:
 
-`EQUAL` divides the total between the participants, defaulting to everyone in the group when
-`participantIds` is left out. Amounts are divided in paise rather than as decimals, and when
-the total doesn't divide cleanly the leftover paise are handed out one each to the lowest
-user ids. Nobody ever pays more than a paisa above anyone else, and the shares always add
-back up to the original amount.
+- **EQUAL** — divides the expense equally among participants.
+- **EXACT** — uses the exact amount assigned to each participant.
 
-`EXACT` takes a share per person in `shares` and rejects the request if they don't add up to
-the total.
+All amounts are handled in **paise** to avoid rounding errors, and the shares always add up to the original expense.
 
-The payer and everyone in the split have to be members of the group.
+Only group members can pay for or participate in an expense.
 
-A member's net balance is what they paid for expenses, minus their share of every expense,
-plus settlements they have paid, minus settlements they have received. A positive net means
-the group owes them; a negative net means they owe the group. The nets across a group always
-add up to zero.
+## Balance Calculation
 
-`/settlements/suggested` turns those balances into a short list of payments by repeatedly
-matching the largest debtor against the largest creditor. That settles at least one person
-per payment, so it never needs more than one payment fewer than there are people. It is not
-guaranteed to be the theoretical minimum for every possible set of balances, but it is
-optimal unless some subgroup happens to cancel out on its own.
+A member's balance is calculated from:
+
+```text
+Amount Paid
+− Expense Share
++ Settlements Paid
+− Settlements Received
+```
+
+A **positive balance** means the member should receive money.  
+A **negative balance** means the member owes money.
+
+The settlement planner then matches debtors with creditors to generate a short list of payments that clears the group's balances.
 
 ## Example
 
 ```bash
-# register and keep the token
+# Register
 TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/register \
   -H 'Content-Type: application/json' \
   -d '{"name":"Ishika","email":"ishika@example.com","password":"secret123"}' \
   | sed -E 's/.*"token":"([^"]+)".*/\1/')
 
-# create a group
-curl -s -X POST http://localhost:8080/api/groups \
+# Create a group
+curl -X POST http://localhost:8080/api/groups \
   -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' \
   -d '{"name":"Goa Trip"}'
 
-# add an expense split evenly across the group
-curl -s -X POST http://localhost:8080/api/groups/1/expenses \
+# Add an expense
+curl -X POST http://localhost:8080/api/groups/1/expenses \
   -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' \
   -d '{"description":"Hotel","amount":3000.00,"paidBy":1,"splitType":"EQUAL"}'
 
-# see where everyone stands
-curl -s http://localhost:8080/api/groups/1/balances -H "Authorization: Bearer $TOKEN"
+# Check balances
+curl http://localhost:8080/api/groups/1/balances \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
-## Errors
+## Tech Stack
 
-Errors come back as JSON rather than a stack trace:
+- **Java 17**
+- **Spring Boot**
+- **Spring Security + JWT**
+- **PostgreSQL / H2**
+- **Hibernate / JPA**
+- **Maven**
+- **Docker**
 
-```json
-{
-  "timestamp": "2026-01-01T12:00:00Z",
-  "status": 400,
-  "error": "Bad Request",
-  "message": "Validation failed",
-  "path": "/api/auth/register",
-  "fieldErrors": {
-    "email": "email must be a valid address"
-  }
-}
-```
+## Project Structure
 
-`fieldErrors` is only present when request validation fails.
+The backend is organised by feature:
 
-## Layout
-
-Code is grouped by feature rather than by layer:
-
-```
+```text
 com.ishika.settleupbackend
-├── config       security wiring and JWT beans
-├── exception    error types and the global handler
-├── expense      expenses, shares and the splitting maths
-├── group        groups and membership
-├── security     tokens, login and registration
-├── settlement   balances, payments and the settlement planner
-└── user         the user entity and lookups
+├── config
+├── exception
+├── expense
+├── group
+├── security
+├── settlement
+└── user
 ```
+
+## Error Handling
+
+The API returns structured JSON errors with HTTP status, message, path, and validation errors when applicable.
+
+## Notes
+
+- JWT tokens expire after 12 hours.
+- PostgreSQL data persists through a Docker volume.
+- H2 is intended for quick local development and testing.
