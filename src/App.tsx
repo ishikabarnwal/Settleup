@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router'
 import type { ReactNode } from 'react'
 import { AppShell } from './components/AppShell'
+import { ScrollToTop } from './components/ScrollToTop'
 import { LoginPage } from './features/auth/LoginPage'
 import { RegisterPage } from './features/auth/RegisterPage'
 import { DashboardPage } from './features/groups/DashboardPage'
@@ -36,34 +37,37 @@ function GuestOnly({ children }: { children: ReactNode }) {
 
 export default function App() {
   return (
-    <Routes>
-      <Route
-        path="/login"
-        element={
-          <GuestOnly>
-            <LoginPage />
-          </GuestOnly>
-        }
-      />
-      <Route
-        path="/register"
-        element={
-          <GuestOnly>
-            <RegisterPage />
-          </GuestOnly>
-        }
-      />
-      <Route
-        element={
-          <RequireAuth>
-            <AppShell />
-          </RequireAuth>
-        }
-      >
-        <Route index element={<DashboardPage />} />
-        <Route path="groups/:groupId" element={<GroupPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
-    </Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            <GuestOnly>
+              <LoginPage />
+            </GuestOnly>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <GuestOnly>
+              <RegisterPage />
+            </GuestOnly>
+          }
+        />
+        <Route
+          element={
+            <RequireAuth>
+              <AppShell />
+            </RequireAuth>
+          }
+        >
+          <Route index element={<DashboardPage />} />
+          <Route path="groups/:groupId" element={<GroupPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+      </Routes>
+    </>
   )
 }

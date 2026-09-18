@@ -18,7 +18,9 @@ export function Segmented<T extends string>({
   const name = useId()
 
   const onKeyDown = (event: KeyboardEvent) => {
-    const index = options.findIndex((o) => o.value === value)
+    // The focused option, not `value`, which can be a render behind on fast key presses.
+    const focusedId = (event.target as HTMLElement).id
+    const index = Math.max(0, options.findIndex((o) => `${name}-${o.value}` === focusedId))
     const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0
     if (!step) return
     event.preventDefault()

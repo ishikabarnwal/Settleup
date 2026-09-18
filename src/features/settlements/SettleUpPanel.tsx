@@ -85,7 +85,7 @@ function PaymentPeople({ from, to, amount }: { from: User; to: User; amount: num
 
   return (
     <div className="flex min-w-0 flex-1 items-center gap-2.5">
-      <div className="flex -space-x-2">
+      <div className="flex -space-x-1.5">
         <Avatar id={from.id} name={from.name} size="sm" className="ring-2 ring-white" />
         <Avatar id={to.id} name={to.name} size="sm" className="ring-2 ring-white" />
       </div>

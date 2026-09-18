@@ -43,7 +43,7 @@ export function AvatarStack({ people, max = 4 }: { people: { id: number; name: s
   const extra = people.length - shown.length
 
   return (
-    <div className="flex -space-x-2">
+    <div className="flex -space-x-1.5">
       {shown.map((person) => (
         <Avatar key={person.id} id={person.id} name={person.name} size="sm" className="ring-2 ring-white" />
       ))}

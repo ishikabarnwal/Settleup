@@ -10,6 +10,12 @@ export function AppShell() {
 
   return (
     <div className="flex min-h-dvh flex-col">
+      <a
+        href="#main"
+        className="sr-only z-50 rounded-lg bg-white px-3 py-2 text-sm font-medium text-ink shadow focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+      >
+        Skip to content
+      </a>
       <header className="sticky top-0 z-30 bg-ink text-white shadow-sm shadow-ink/20">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link to="/" className="rounded-lg" aria-label="SettleUp home">
@@ -39,7 +45,7 @@ export function AppShell() {
         <div aria-hidden className="h-0.5 bg-brand-sweep" />
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main id="main" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 outline-none sm:px-6 sm:py-8">
         <Outlet />
       </main>
     </div>

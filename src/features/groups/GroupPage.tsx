@@ -42,7 +42,7 @@ function GroupView({ groupId }: { groupId: number }) {
   const group = useGroup(groupId)
   useDocumentTitle(group.data?.name ?? (group.isError ? 'Group' : null))
 
-  if (group.isPending) return <PageSpinner label="Loading group" />
+  if (group.isPending) return <GroupSkeleton />
 
   if (group.isError) {
     const status = group.error instanceof ApiError ? group.error.status : 0
@@ -75,6 +75,31 @@ function GroupView({ groupId }: { groupId: number }) {
   }
 
   return <GroupContent group={group.data} />
+}
+
+function GroupSkeleton() {
+  return (
+    <div className="animate-pulse space-y-6" aria-busy aria-label="Loading group">
+      <div className="h-4 w-24 rounded bg-stone-200" />
+      <div className="space-y-3">
+        <div className="h-8 w-56 rounded bg-stone-200" />
+        <div className="h-4 w-72 max-w-full rounded bg-stone-100" />
+        <div className="flex gap-2">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="size-7 rounded-full bg-stone-200" />
+          ))}
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="space-y-2.5">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-16 rounded-xl border border-stone-200 bg-white" />
+          ))}
+        </div>
+        <div className="h-64 rounded-2xl border border-stone-200 bg-white" />
+      </div>
+    </div>
+  )
 }
 
 function BackLink() {
@@ -134,7 +159,23 @@ function GroupContent({ group }: { group: GroupDetail }) {
           widest row, which pushed the page wider than the screen. */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="min-w-0">
-          <div role="tablist" aria-label="Group sections" className="mb-5 flex gap-1 border-b border-stone-200">
+          <div
+            role="tablist"
+            aria-label="Group sections"
+            className="mb-5 flex gap-1 border-b border-stone-200"
+            onKeyDown={(event) => {
+              const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0
+              if (!step) return
+              event.preventDefault()
+              // Start from the tab that has focus rather than state, which can
+              // be a render behind when keys are pressed quickly.
+              const focused = (event.target as HTMLElement).id.replace('tab-', '')
+              const index = Math.max(0, tabs.findIndex((t) => t.id === focused))
+              const next = tabs[(index + step + tabs.length) % tabs.length]
+              selectTab(next.id)
+              document.getElementById(`tab-${next.id}`)?.focus()
+            }}
+          >
             {tabs.map((t) => (
               <button
                 key={t.id}
@@ -143,6 +184,7 @@ function GroupContent({ group }: { group: GroupDetail }) {
                 role="tab"
                 aria-selected={tab === t.id}
                 aria-controls={`panel-${t.id}`}
+                tabIndex={tab === t.id ? 0 : -1}
                 onClick={() => selectTab(t.id)}
                 className={clsx(
                   '-mb-px border-b-2 px-3 py-2.5 text-sm font-medium transition',

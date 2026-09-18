@@ -66,6 +66,14 @@ npm run test:e2e
 
 Each test registers its own throwaway users, so they don't depend on existing data. Besides the happy paths they check things like a save whose response is lost being retried without creating a duplicate (the `Idempotency-Key` at work), and that no page ends up wider than a phone screen.
 
+## Behaviour worth knowing
+
+- **Works on phones.** Dialogs become bottom sheets with their buttons pinned below a scrolling body, and no page is ever wider than the screen (there's a test for it).
+- **Loading, empty and error states** everywhere data is shown: skeletons while loading, a friendly message and a *Try again* button when a request fails, and a toast if a background refresh fails while older data is still on screen.
+- **Safe to retry.** Adding an expense or recording a payment sends an `Idempotency-Key`, and the form keeps the same key until the request succeeds, so a double click or a retry after a dropped connection never creates a duplicate.
+- **Keyboard friendly.** A skip link past the navigation, arrow keys for the group tabs and the split type, native dialogs that trap focus and close on Escape, and labelled fields for screen readers.
+- **Doesn't fall over.** If something throws while rendering, an error screen offers a reload instead of leaving a blank page.
+
 ## How sign-in is stored
 
 The backend returns a JWT in the response body for use in an `Authorization` header. The token is kept in `localStorage` so a refresh doesn't sign you out. The safer option, an httpOnly cookie that scripts can't read, can only be set by the server, so it isn't available to a frontend on its own. To limit the exposure: nothing is rendered as raw HTML, there are no third-party scripts, tokens expire after 12 hours, and the app signs you out when the token expires or the backend rejects it. The full reasoning is in `src/lib/session.ts`.
