@@ -1,5 +1,12 @@
 import clsx from 'clsx'
-import { forwardRef, useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from 'react'
+import {
+  forwardRef,
+  useId,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
+} from 'react'
 
 const control =
   'block w-full rounded-lg border bg-white px-3 text-sm text-stone-900 shadow-xs transition placeholder:text-stone-400 ' +
@@ -95,6 +102,24 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
     </select>
   )
 })
+
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<HTMLTextAreaElement>>(
+  function Textarea({ className, ...props }, ref) {
+    return (
+      <textarea
+        ref={ref}
+        rows={3}
+        className={clsx(
+          control,
+          'resize-none py-2',
+          props['aria-invalid'] ? 'border-rose' : 'border-stone-300',
+          className,
+        )}
+        {...props}
+      />
+    )
+  },
+)
 
 export function FormError({ message }: { message?: string | null }) {
   if (!message) return null

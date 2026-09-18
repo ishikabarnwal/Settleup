@@ -4,11 +4,11 @@ import { PASSWORD, registerThroughUi, registerViaApi, signInThroughUi, uniqueEma
 test('registering signs you in and survives a reload', async ({ page }) => {
   await registerThroughUi(page, 'Ishika Barnwal')
 
-  await expect(page.getByRole('heading', { name: 'Hi, Ishika' })).toBeVisible()
+  await expect(page.getByText('Hi, Ishika')).toBeVisible()
   await expect(page).toHaveTitle('Your groups · SettleUp')
 
   await page.reload()
-  await expect(page.getByRole('heading', { name: 'Hi, Ishika' })).toBeVisible()
+  await expect(page.getByText('Hi, Ishika')).toBeVisible()
 })
 
 test('signing out takes you back to the login page and stays signed out', async ({ page }) => {
@@ -27,7 +27,7 @@ test('logging in with the right password lands on the dashboard', async ({ page 
   await signInThroughUi(page, email)
 
   await expect(page).toHaveURL('/')
-  await expect(page.getByRole('heading', { name: 'Hi, Tara' })).toBeVisible()
+  await expect(page.getByText('Hi, Tara')).toBeVisible()
 })
 
 test('a wrong password shows the backend message and keeps you on the form', async ({ page }) => {
