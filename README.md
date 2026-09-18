@@ -18,8 +18,12 @@ Sensitive values are provided through environment variables.
 | `DB_URL` | No | `jdbc:postgresql://localhost:5432/settleup` |
 | `DB_USERNAME` | No | `settleup` |
 | `DB_PASSWORD` | No | `settleup` |
+| `CORS_ALLOWED_ORIGINS` | No | `http://localhost:5173` |
+| `API_DOCS_ENABLED` | No | `true` |
 
 \* `JWT_SECRET` is required when running with PostgreSQL and must be at least 32 characters long.
+
+`CORS_ALLOWED_ORIGINS` is a comma separated list of frontend origins allowed to call the API from a browser (for example `https://settleup.example.com,http://localhost:5173`). The default covers the frontend's local dev server.
 
 Copy `.env.example` to `.env` and add your values.
 
