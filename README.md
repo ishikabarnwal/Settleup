@@ -66,7 +66,7 @@ Hibernate automatically manages the database schema.
 ./mvnw verify
 ```
 
-Tests use H2 and do not require Docker or PostgreSQL.
+Tests run against a real PostgreSQL 17 database that [Testcontainers](https://testcontainers.com) starts in Docker for the run and throws away afterwards, so **Docker must be running**. Nothing needs to be set up by hand, and your `docker compose` database isn't touched.
 
 ## API Docs
 
@@ -257,4 +257,4 @@ The API returns structured JSON errors with HTTP status, message, path, and vali
 
 - JWT tokens expire after 12 hours.
 - PostgreSQL data persists through a Docker volume.
-- H2 is intended for quick local development and testing.
+- H2 is only used by the `dev` profile for quick local runs; the test suite uses PostgreSQL.

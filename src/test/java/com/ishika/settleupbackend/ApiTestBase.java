@@ -9,15 +9,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * The whole suite shares one in-memory database, so every test starts by
+ * The whole suite shares one Postgres container, so every test starts by
  * emptying it. Order matters here: children before parents, or the foreign keys
  * complain.
  */
 @SpringBootTest
+@Import(PostgresTestConfig.class)
 @AutoConfigureMockMvc
 abstract class ApiTestBase {
 
