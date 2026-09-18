@@ -6,6 +6,7 @@ import { LoginPage } from './features/auth/LoginPage'
 import { RegisterPage } from './features/auth/RegisterPage'
 import { DashboardPage } from './features/groups/DashboardPage'
 import { GroupPage } from './features/groups/GroupPage'
+import { LandingPage } from './features/landing/LandingPage'
 import { NotFoundPage } from './features/NotFoundPage'
 import { useAuth } from './lib/auth'
 
@@ -35,6 +36,22 @@ function GuestOnly({ children }: { children: ReactNode }) {
   return <Navigate to={from && from.startsWith('/') && !from.startsWith('//') ? from : '/'} replace />
 }
 
+/**
+ * "/" is two pages: the landing page for visitors, and the dashboard once
+ * you're signed in. Deciding here means a signed-in user never sees the
+ * landing page, not even for a moment.
+ */
+function Home() {
+  const { user } = useAuth()
+  if (!user) return <LandingPage />
+
+  return (
+    <AppShell>
+      <DashboardPage />
+    </AppShell>
+  )
+}
+
 export default function App() {
   return (
     <>
@@ -56,6 +73,7 @@ export default function App() {
             </GuestOnly>
           }
         />
+        <Route index element={<Home />} />
         <Route
           element={
             <RequireAuth>
@@ -63,7 +81,6 @@ export default function App() {
             </RequireAuth>
           }
         >
-          <Route index element={<DashboardPage />} />
           <Route path="groups/:groupId" element={<GroupPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

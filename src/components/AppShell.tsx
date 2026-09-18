@@ -1,12 +1,15 @@
 import { LogOut } from 'lucide-react'
-import { Link, Outlet } from 'react-router'
+import type { ReactNode } from 'react'
+import { Link, Outlet, useNavigate } from 'react-router'
 import { useCurrentUser, useAuth } from '../lib/auth'
 import { Logo } from './Logo'
 import { Avatar } from './ui/Avatar'
 
-export function AppShell() {
+/** The signed-in frame. Renders its route's page, or `children` when used directly (the dashboard at "/"). */
+export function AppShell({ children }: { children?: ReactNode }) {
   const user = useCurrentUser()
   const { signOut } = useAuth()
+  const navigate = useNavigate()
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -32,7 +35,10 @@ export function AppShell() {
             </div>
             <button
               type="button"
-              onClick={signOut}
+              onClick={() => {
+                signOut()
+                navigate('/', { replace: true })
+              }}
               className="inline-flex h-9 items-center gap-2 rounded-lg px-2.5 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
             >
               <LogOut className="size-4" />
@@ -46,7 +52,7 @@ export function AppShell() {
       </header>
 
       <main id="main" tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 outline-none sm:px-6 sm:py-8">
-        <Outlet />
+        {children ?? <Outlet />}
       </main>
     </div>
   )

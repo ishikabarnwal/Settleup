@@ -68,6 +68,7 @@ Each test registers its own throwaway users, so they don't depend on existing da
 
 ## Behaviour worth knowing
 
+- **A home page for visitors.** Signed-out visitors to `/` see what SettleUp is, with links to sign up or log in. Signed-in users get their dashboard at `/` instead and never see the landing page.
 - **Works on phones.** Dialogs become bottom sheets with their buttons pinned below a scrolling body, and no page is ever wider than the screen (there's a test for it).
 - **Loading, empty and error states** everywhere data is shown: skeletons while loading, a friendly message and a *Try again* button when a request fails, and a toast if a background refresh fails while older data is still on screen.
 - **Undo-proof actions ask first.** Deleting an expense or a payment, removing a member and deleting a group all go through a confirmation. Removing members and deleting the group are only offered to the group's owner, matching the backend. If the backend refuses (say, removing someone who still owes money), its reason is shown in the dialog.
@@ -84,7 +85,7 @@ The backend returns a JWT in the response body for use in an `Authorization` hea
 ```text
 src
 ├── components     shared pieces: app shell, logo, and ui/ (buttons, fields, dialogs...)
-├── features       one folder per area: auth, groups, expenses, settlements
+├── features       one folder per area: landing, auth, groups, expenses, settlements
 ├── lib            API client, session, money maths, form helpers
 └── index.css      Tailwind setup and the palette
 e2e                Playwright tests

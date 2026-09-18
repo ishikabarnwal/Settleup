@@ -6,7 +6,8 @@ export function ScrollToTop() {
   const { pathname } = useLocation()
 
   useEffect(() => {
-    window.scrollTo(0, 0)
+    // Instant, so a new page doesn't visibly scroll up from where the last one was.
+    window.scrollTo({ top: 0, behavior: 'instant' })
   }, [pathname])
 
   return null

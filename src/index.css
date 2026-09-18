@@ -77,6 +77,13 @@
     @apply outline-2 outline-offset-2 outline-plum;
   }
 
+  /* Section links on the landing page glide rather than jump, unless motion is turned down. */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

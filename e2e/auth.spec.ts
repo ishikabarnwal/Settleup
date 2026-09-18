@@ -11,13 +11,14 @@ test('registering signs you in and survives a reload', async ({ page }) => {
   await expect(page.getByText('Hi, Ishika')).toBeVisible()
 })
 
-test('signing out takes you back to the login page and stays signed out', async ({ page }) => {
+test('signing out goes back to the home page and stays signed out', async ({ page }) => {
   await registerThroughUi(page, 'Riya')
 
   await page.getByRole('button', { name: 'Sign out' }).click()
-  await expect(page).toHaveURL(/\/login$/)
+  await expect(page).toHaveURL('/')
+  await expect(page.getByRole('heading', { level: 1, name: /Split shared costs/ })).toBeVisible()
 
-  await page.goto('/')
+  await page.goto('/groups/1')
   await expect(page).toHaveURL(/\/login$/)
 })
 
