@@ -1,22 +1,33 @@
-import { ArrowRight, CircleCheck, History } from 'lucide-react'
+import { ArrowRight, CircleCheck, History, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 import { Avatar } from '../../components/ui/Avatar'
 import { Button } from '../../components/ui/Button'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { errorMessage } from '../../lib/api'
 import { useCurrentUser } from '../../lib/auth'
 import { formatDateTime } from '../../lib/dates'
 import { formatPaise, toPaise } from '../../lib/money'
+import { useDeleteSettlement } from '../../lib/queries'
 import type { Settlement, SuggestedPayment, User } from '../../lib/types'
 import type { PaymentDraft } from './RecordPaymentDialog'
 
 export function SettleUpPanel({
+  groupId,
   suggested,
   history,
   onRecord,
 }: {
+  groupId: number
   suggested: SuggestedPayment[]
   history: Settlement[]
   onRecord: (draft: PaymentDraft) => void
 }) {
+  const me = useCurrentUser()
+  const [deleting, setDeleting] = useState<Settlement | null>(null)
+  const name = (user: User) => (user.id === me.id ? 'You' : user.name)
+
   return (
     <div className="space-y-8">
       <section aria-labelledby="suggested-heading">
@@ -64,18 +75,78 @@ export function SettleUpPanel({
         ) : (
           <ul className="divide-y divide-stone-100 rounded-2xl border border-stone-200 bg-white" aria-label="Payment history">
             {history.map((payment) => (
-              <li key={payment.id} className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-center sm:gap-4">
-                <PaymentPeople from={payment.paidBy} to={payment.paidTo} amount={toPaise(payment.amount)} />
-                <div className="text-xs text-stone-500 sm:text-right">
-                  <time dateTime={payment.settledAt}>{formatDateTime(payment.settledAt)}</time>
-                  {payment.note && <p className="text-stone-600">“{payment.note}”</p>}
+              <li key={payment.id} className="flex items-center gap-2 px-4 py-3 sm:gap-4">
+                <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
+                  <PaymentPeople from={payment.paidBy} to={payment.paidTo} amount={toPaise(payment.amount)} />
+                  <div className="text-xs text-stone-500 sm:text-right">
+                    <time dateTime={payment.settledAt}>{formatDateTime(payment.settledAt)}</time>
+                    {payment.note && <p className="text-stone-600">“{payment.note}”</p>}
+                  </div>
                 </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="px-2 text-stone-500 hover:text-rose"
+                  icon={<Trash2 className="size-4" />}
+                  aria-label={`Delete payment from ${name(payment.paidBy)} to ${name(payment.paidTo)}`}
+                  title="Delete payment"
+                  onClick={() => setDeleting(payment)}
+                />
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      <DeleteSettlementDialog groupId={groupId} settlement={deleting} name={name} onClose={() => setDeleting(null)} />
     </div>
+  )
+}
+
+function DeleteSettlementDialog({
+  groupId,
+  settlement,
+  name,
+  onClose,
+}: {
+  groupId: number
+  settlement: Settlement | null
+  name: (user: User) => string
+  onClose: () => void
+}) {
+  const deleteSettlement = useDeleteSettlement(groupId)
+  const close = () => {
+    deleteSettlement.reset()
+    onClose()
+  }
+
+  return (
+    <ConfirmDialog
+      open={settlement !== null}
+      title="Delete this payment?"
+      confirmLabel="Delete payment"
+      pending={deleteSettlement.isPending}
+      error={deleteSettlement.isError ? errorMessage(deleteSettlement.error) : null}
+      onClose={close}
+      onConfirm={() =>
+        settlement &&
+        deleteSettlement.mutate(settlement.id, {
+          onSuccess: () => {
+            toast.success('Payment deleted')
+            close()
+          },
+        })
+      }
+    >
+      {settlement && (
+        <p>
+          <span className="font-medium text-stone-900">
+            {name(settlement.paidBy)} → {name(settlement.paidTo)}, {formatPaise(toPaise(settlement.amount))}
+          </span>{' '}
+          will be taken off the record, so whatever it paid off is owed again. This can't be undone.
+        </p>
+      )}
+    </ConfirmDialog>
   )
 }
 

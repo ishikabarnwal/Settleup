@@ -240,7 +240,9 @@ function SettleTab({ groupId, onRecord }: { groupId: number; onRecord: (draft: P
     <Loaded query={suggested} what="suggested payments">
       {(suggestedData) => (
         <Loaded query={history} what="payment history">
-          {(historyData) => <SettleUpPanel suggested={suggestedData} history={historyData} onRecord={onRecord} />}
+          {(historyData) => (
+            <SettleUpPanel groupId={groupId} suggested={suggestedData} history={historyData} onRecord={onRecord} />
+          )}
         </Loaded>
       )}
     </Loaded>
