@@ -6,7 +6,7 @@ A REST API for **splitting shared expenses and managing group balances**. Users 
 
 - Java 17+
 - Maven (Maven Wrapper included)
-- Docker (only required for local PostgreSQL)
+- Docker (for local PostgreSQL and for running the tests)
 
 ## Configuration
 
@@ -76,7 +76,7 @@ Set `API_DOCS_ENABLED=false` to turn both off, for example in production.
 
 ## API Overview
 
-All endpoints except `/health`, `/api/auth/register`, and `/api/auth/login` require:
+All endpoints except `/health`, `/api/auth/register`, `/api/auth/login` and the API docs require:
 
 ```text
 Authorization: Bearer <token>
@@ -101,29 +101,37 @@ Authorization: Bearer <token>
 |---|---|---|
 | POST | `/api/groups` | Create a group |
 | GET | `/api/groups` | List user's groups |
-| GET | `/api/groups/{groupId}` | Get group details |
+| GET | `/api/groups/{groupId}` | Get group details, including each member's role |
+| DELETE | `/api/groups/{groupId}` | Delete the group and all its history (owner only) |
 | POST | `/api/groups/{groupId}/members` | Add a member |
+| DELETE | `/api/groups/{groupId}/members/{userId}` | Remove a member with a zero balance (owner only) |
 
 ### Expenses
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| POST | `/api/groups/{groupId}/expenses` | Add an expense |
-| GET | `/api/groups/{groupId}/expenses` | List expenses |
+| POST | `/api/groups/{groupId}/expenses` | Add an expense (accepts `Idempotency-Key`) |
+| GET | `/api/groups/{groupId}/expenses` | List expenses, newest first |
 | GET | `/api/groups/{groupId}/expenses/{expenseId}` | Get expense details |
+| DELETE | `/api/groups/{groupId}/expenses/{expenseId}` | Delete an expense |
 
 ### Balances & Settlements
 
 | Method | Endpoint | Purpose |
 |---|---|---|
 | GET | `/api/groups/{groupId}/balances` | View member balances |
-| POST | `/api/groups/{groupId}/settlements` | Record a payment |
+| POST | `/api/groups/{groupId}/settlements` | Record a payment (accepts `Idempotency-Key`) |
 | GET | `/api/groups/{groupId}/settlements` | View payment history |
+| DELETE | `/api/groups/{groupId}/settlements/{settlementId}` | Delete a recorded payment |
 | GET | `/api/groups/{groupId}/settlements/suggested` | Get suggested payments |
 
-### Health
+### Health and Docs
 
-`GET /health` — application health check.
+| Method | Endpoint | Purpose |
+|---|---|---|
+| GET | `/health` | Application health check |
+| GET | `/swagger-ui.html` | Interactive API docs |
+| GET | `/v3/api-docs` | OpenAPI spec as JSON |
 
 ## Expense Splitting
 
@@ -233,6 +241,8 @@ curl http://localhost:8080/api/groups/1/balances \
 - **Hibernate / JPA**
 - **Maven**
 - **Docker**
+- **Testcontainers** (PostgreSQL in tests)
+- **springdoc-openapi** (Swagger UI)
 
 ## Project Structure
 
@@ -244,6 +254,7 @@ com.ishika.settleupbackend
 ├── exception
 ├── expense
 ├── group
+├── idempotency
 ├── security
 ├── settlement
 └── user
@@ -252,6 +263,18 @@ com.ishika.settleupbackend
 ## Error Handling
 
 The API returns structured JSON errors with HTTP status, message, path, and validation errors when applicable.
+
+## Known Limitations
+
+- **Suggested payments aren't guaranteed to be the minimum.** The planner repeatedly matches the biggest debtor with the biggest creditor. That never needs more than one payment fewer than there are people with a balance, and is optimal unless some smaller group within them happens to cancel out on its own, but finding the true minimum in every case is NP-hard.
+- **No database migrations.** Hibernate creates and updates the schema (`ddl-auto=update`). It adds new tables and columns but won't change existing constraints or column types, and adding a required column to a table that already has rows would fail. The one case that has come up so far, the allowed `splitType` values, is corrected automatically on startup. Anything beyond that needs a manual step until proper migrations (e.g. Flyway) are added.
+- **Expenses can't be edited**, only deleted and added again.
+- **Any member can delete any expense or settlement**, not just the person who added it.
+- **Ownership can't be transferred**, and members can't leave a group themselves. Only the owner can remove them, and the owner can't leave at all (only delete the group).
+- **Deleting a group is permanent** and is allowed even while people still owe each other.
+- **Idempotency keys only cover creating expenses and settlements**, not other POSTs. A retry is only treated as the same request if the values are the same as written: an amount of `100` and `100.00` count as different requests.
+- **Single currency.** Amounts are stored with two decimal places (rupees and paise).
+- **No pagination.** List endpoints return everything in the group.
 
 ## Notes
 
