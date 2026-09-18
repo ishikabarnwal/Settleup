@@ -70,6 +70,7 @@ Each test registers its own throwaway users, so they don't depend on existing da
 
 - **Works on phones.** Dialogs become bottom sheets with their buttons pinned below a scrolling body, and no page is ever wider than the screen (there's a test for it).
 - **Loading, empty and error states** everywhere data is shown: skeletons while loading, a friendly message and a *Try again* button when a request fails, and a toast if a background refresh fails while older data is still on screen.
+- **Undo-proof actions ask first.** Deleting an expense or a payment, removing a member and deleting a group all go through a confirmation. Removing members and deleting the group are only offered to the group's owner, matching the backend. If the backend refuses (say, removing someone who still owes money), its reason is shown in the dialog.
 - **Safe to retry.** Adding an expense or recording a payment sends an `Idempotency-Key`, and the form keeps the same key until the request succeeds, so a double click or a retry after a dropped connection never creates a duplicate.
 - **Keyboard friendly.** A skip link past the navigation, arrow keys for the group tabs and the split type, native dialogs that trap focus and close on Escape, and labelled fields for screen readers.
 - **Doesn't fall over.** If something throws while rendering, an error screen offers a reload instead of leaving a blank page.

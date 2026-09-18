@@ -1,16 +1,25 @@
 import clsx from 'clsx'
-import { ArrowLeft, HandCoins, Lock, Plus, RefreshCw, SearchX } from 'lucide-react'
+import { ArrowLeft, HandCoins, Lock, Plus, RefreshCw, SearchX, Trash2 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
+import { toast } from 'sonner'
 import { NetAmount } from '../../components/Amount'
 import { AvatarStack } from '../../components/ui/Avatar'
 import { Button } from '../../components/ui/Button'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { EmptyState } from '../../components/ui/EmptyState'
 import { PageSpinner } from '../../components/ui/Spinner'
 import { ApiError, errorMessage } from '../../lib/api'
 import { useCurrentUser } from '../../lib/auth'
 import { toPaise } from '../../lib/money'
-import { useBalances, useExpenses, useGroup, useSettlements, useSuggestedPayments } from '../../lib/queries'
+import {
+  useBalances,
+  useDeleteGroup,
+  useExpenses,
+  useGroup,
+  useSettlements,
+  useSuggestedPayments,
+} from '../../lib/queries'
 import type { GroupDetail } from '../../lib/types'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
 import { AddExpenseDialog } from '../expenses/AddExpenseDialog'
@@ -116,6 +125,7 @@ function GroupContent({ group }: { group: GroupDetail }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [addingExpense, setAddingExpense] = useState(false)
   const [payment, setPayment] = useState<PaymentDraft | null>(null)
+  const [deletingGroup, setDeletingGroup] = useState(false)
 
   const requested = searchParams.get('tab')
   const tab: TabId = tabs.some((t) => t.id === requested) ? (requested as TabId) : 'expenses'
@@ -207,8 +217,18 @@ function GroupContent({ group }: { group: GroupDetail }) {
           </div>
         </div>
 
-        <aside>
+        <aside className="space-y-3">
           <MembersCard groupId={group.id} groupName={group.name} members={group.members} />
+          {group.createdBy === me.id && (
+            <Button
+              variant="danger"
+              className="w-full"
+              icon={<Trash2 className="size-4" />}
+              onClick={() => setDeletingGroup(true)}
+            >
+              Delete group
+            </Button>
+          )}
         </aside>
       </div>
 
@@ -219,7 +239,42 @@ function GroupContent({ group }: { group: GroupDetail }) {
         onClose={() => setAddingExpense(false)}
       />
       <RecordPaymentDialog groupId={group.id} members={group.members} draft={payment} onClose={() => setPayment(null)} />
+      <DeleteGroupDialog group={group} open={deletingGroup} onClose={() => setDeletingGroup(false)} />
     </div>
+  )
+}
+
+function DeleteGroupDialog({ group, open, onClose }: { group: GroupDetail; open: boolean; onClose: () => void }) {
+  const navigate = useNavigate()
+  const deleteGroup = useDeleteGroup(group.id)
+  const close = () => {
+    deleteGroup.reset()
+    onClose()
+  }
+
+  return (
+    <ConfirmDialog
+      open={open}
+      title={`Delete ${group.name}?`}
+      confirmLabel="Delete group"
+      pending={deleteGroup.isPending}
+      error={deleteGroup.isError ? errorMessage(deleteGroup.error) : null}
+      onClose={close}
+      onConfirm={() =>
+        deleteGroup.mutate(undefined, {
+          onSuccess: () => {
+            toast.success(`${group.name} was deleted`)
+            navigate('/', { replace: true })
+          },
+        })
+      }
+    >
+      <p>
+        This permanently deletes <span className="font-medium text-stone-900">{group.name}</span> for all{' '}
+        {group.members.length} {group.members.length === 1 ? 'member' : 'members'}, along with every expense and
+        payment in it, even if people still owe each other. This can't be undone.
+      </p>
+    </ConfirmDialog>
   )
 }
 

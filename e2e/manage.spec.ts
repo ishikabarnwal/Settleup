@@ -198,3 +198,55 @@ test.describe('removing a member', () => {
     await expect(members(page)).toContainText('Riya')
   })
 })
+
+test.describe('deleting a group', () => {
+  test('only the owner gets the option', async ({ page }) => {
+    const { riya, group } = await twoPersonGroup(page)
+    await useSession(page, riya)
+    await page.goto(`/groups/${group.id}`)
+
+    await expect(page.getByRole('heading', { level: 1, name: 'Goa trip' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Delete group' })).toHaveCount(0)
+  })
+
+  test('asks first, then deletes it and goes back to the dashboard', async ({ page }) => {
+    const { ishika, riya, group } = await twoPersonGroup(page)
+    await addExpenseViaApi(page, ishika, group.id, { description: 'Villa', amount: 900, paidBy: ishika.user.id, splitType: 'EQUAL' })
+    const other = await createGroupViaApi(page, ishika, 'Flat 302')
+    await useSession(page, ishika)
+    await page.goto(`/groups/${group.id}`)
+
+    await page.getByRole('button', { name: 'Delete group' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Delete Goa trip?' })
+    await expect(dialog).toContainText('for all 2 members')
+
+    await dialog.getByRole('button', { name: 'Cancel' }).click()
+    await expect(page).toHaveURL(`/groups/${group.id}`)
+
+    // Nothing should go back and ask for the group once it's gone.
+    const lateLookups: number[] = []
+    page.on('response', (response) => {
+      if (new URL(response.url()).pathname.startsWith(`/api/groups/${group.id}`) && response.status() === 404) {
+        lateLookups.push(response.status())
+      }
+    })
+
+    await page.getByRole('button', { name: 'Delete group' }).click()
+    await dialog.getByRole('button', { name: 'Delete group' }).click()
+
+    await expect(page).toHaveURL('/')
+    await expect(page.getByText('Goa trip was deleted')).toBeVisible()
+    await expect(page.getByRole('link', { name: /Flat 302/ })).toBeVisible()
+    await expect(page.getByRole('link', { name: /Goa trip/ })).toHaveCount(0)
+    await expect(page.getByText("Couldn't refresh")).toHaveCount(0)
+    expect(lateLookups).toEqual([])
+
+    expect((await getViaApi(page, ishika, `/api/groups/${group.id}`)).status()).toBe(404)
+    expect((await getViaApi(page, riya, `/api/groups/${group.id}`)).status()).toBe(404)
+    expect((await getViaApi(page, ishika, `/api/groups/${other.id}`)).status()).toBe(200)
+
+    // Following an old link to it doesn't pretend it still exists.
+    await page.goto(`/groups/${group.id}`)
+    await expect(page.getByRole('heading', { name: "This group doesn't exist" })).toBeVisible()
+  })
+})

@@ -109,15 +109,16 @@ export function useRemoveMember(groupId: number) {
   })
 }
 
-/** Drops everything cached for the group so nothing tries to refetch it after it's gone. */
+/**
+ * Only the dashboard list needs refreshing. The group's own cached data is
+ * left to expire: clearing it while its page is still on screen would make
+ * that page ask for the group again and get a 404 on the way out.
+ */
 export function useDeleteGroup(groupId: number) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: () => api.deleteGroup(groupId),
-    onSuccess: () => {
-      queryClient.removeQueries({ queryKey: keys.group(groupId) })
-      return queryClient.invalidateQueries({ queryKey: keys.groups, exact: true })
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: keys.groups, exact: true }),
   })
 }
 
