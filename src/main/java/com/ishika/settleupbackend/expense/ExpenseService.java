@@ -48,9 +48,12 @@ public class ExpenseService {
             throw new BadRequestException("The payer must be a member of this group");
         }
 
+        rejectFieldsForOtherSplitTypes(request);
+
         Map<Long, BigDecimal> shares = switch (request.splitType()) {
             case EQUAL -> equalShares(request, amount, membersById);
             case EXACT -> exactShares(request, amount, membersById);
+            case PERCENTAGE -> percentageShares(request, amount, membersById);
         };
 
         Expense expense = new Expense(
@@ -84,12 +87,31 @@ public class ExpenseService {
         return ExpenseResponse.from(expense);
     }
 
+    /**
+     * Each split type reads exactly one of participantIds, shares and
+     * percentages. Sending one that belongs to a different type is almost
+     * certainly a mistake, so it is rejected rather than quietly ignored.
+     */
+    private void rejectFieldsForOtherSplitTypes(CreateExpenseRequest request) {
+        Map<SplitType, List<?>> inputs = Map.of(
+                SplitType.EQUAL, nullToEmpty(request.participantIds()),
+                SplitType.EXACT, nullToEmpty(request.shares()),
+                SplitType.PERCENTAGE, nullToEmpty(request.percentages()));
+
+        for (SplitType type : SplitType.values()) {
+            if (type != request.splitType() && !inputs.get(type).isEmpty()) {
+                throw new BadRequestException("%s only applies to %s splits, use %s for %s".formatted(
+                        type.inputField(), type, request.splitType().inputField(), request.splitType()));
+            }
+        }
+    }
+
+    private static List<?> nullToEmpty(List<?> list) {
+        return list == null ? List.of() : list;
+    }
+
     private Map<Long, BigDecimal> equalShares(
             CreateExpenseRequest request, BigDecimal amount, Map<Long, User> membersById) {
-
-        if (request.shares() != null && !request.shares().isEmpty()) {
-            throw new BadRequestException("shares only applies to an EXACT split, use participantIds for EQUAL");
-        }
 
         List<Long> participantIds = request.participantIds() == null || request.participantIds().isEmpty()
                 ? new ArrayList<>(membersById.keySet())
@@ -101,9 +123,6 @@ public class ExpenseService {
     private Map<Long, BigDecimal> exactShares(
             CreateExpenseRequest request, BigDecimal amount, Map<Long, User> membersById) {
 
-        if (request.participantIds() != null && !request.participantIds().isEmpty()) {
-            throw new BadRequestException("participantIds only applies to an EQUAL split, use shares for EXACT");
-        }
         if (request.shares() == null || request.shares().isEmpty()) {
             throw new BadRequestException("An EXACT split needs at least one share");
         }
@@ -126,6 +145,22 @@ public class ExpenseService {
         }
 
         return shares;
+    }
+
+    private Map<Long, BigDecimal> percentageShares(
+            CreateExpenseRequest request, BigDecimal amount, Map<Long, User> membersById) {
+
+        if (request.percentages() == null || request.percentages().isEmpty()) {
+            throw new BadRequestException("A PERCENTAGE split needs at least one percentage");
+        }
+
+        distinctMembers(
+                request.percentages().stream().map(PercentageInput::userId).toList(), membersById, "percentages");
+
+        Map<Long, BigDecimal> percentByUserId = new LinkedHashMap<>();
+        request.percentages().forEach(input -> percentByUserId.put(input.userId(), input.percent()));
+
+        return MoneySplitter.splitByPercentage(amount, percentByUserId);
     }
 
     /** Every participant has to be in the group, and nobody can appear twice. */

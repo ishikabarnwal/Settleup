@@ -121,12 +121,15 @@ Authorization: Bearer <token>
 
 ## Expense Splitting
 
-SettleUp supports two split types:
+SettleUp supports three split types:
 
-- **EQUAL** — divides the expense equally among participants.
-- **EXACT** — uses the exact amount assigned to each participant.
+- **EQUAL** — divides the expense equally among participants (`participantIds`, or the whole group if left out).
+- **EXACT** — uses the exact amount assigned to each participant (`shares`). They must add up to the total.
+- **PERCENTAGE** — gives each participant a percentage of the total (`percentages`, e.g. `[{"userId":1,"percent":60},{"userId":2,"percent":40}]`). Up to two decimal places, and they must add up to exactly 100.
 
-All amounts are handled in **paise** to avoid rounding errors, and the shares always add up to the original expense.
+All amounts are handled in **paise** to avoid rounding errors, and the shares always add up to the original expense. When a total doesn't divide cleanly (in an equal or percentage split), the leftover paise go one each to the lowest user ids, so nobody is ever more than a paisa off.
+
+Each split type only accepts its own field; sending another type's field returns a 400.
 
 Only group members can pay for or participate in an expense.
 

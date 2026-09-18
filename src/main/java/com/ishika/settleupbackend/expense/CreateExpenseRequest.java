@@ -10,7 +10,8 @@ import java.util.List;
 
 /**
  * EQUAL uses participantIds and falls back to the whole group when it is left
- * out. EXACT uses shares, which have to add up to the amount.
+ * out. EXACT uses shares, which have to add up to the amount. PERCENTAGE uses
+ * percentages, which have to add up to 100.
  */
 public record CreateExpenseRequest(
         @NotBlank(message = "description is required")
@@ -27,4 +28,6 @@ public record CreateExpenseRequest(
 
         List<Long> participantIds,
 
-        @Valid List<ShareInput> shares) {}
+        @Valid List<ShareInput> shares,
+
+        @Valid List<PercentageInput> percentages) {}

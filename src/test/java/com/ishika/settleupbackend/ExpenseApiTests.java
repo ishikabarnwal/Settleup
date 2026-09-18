@@ -95,6 +95,95 @@ class ExpenseApiTests extends ApiTestBase {
     }
 
     @Test
+    void percentageSplitRoundsTheSameWayAsEqual() throws Exception {
+        // Half of 5 paise each is 2.5, so both round down to 2 and the spare
+        // paisa goes to the lower id, just like an equal split would.
+        JsonNode created = api.json(api.postJson(expensesPath(), ownerToken, """
+                {"description":"Chai","amount":0.05,"paidBy":%d,"splitType":"PERCENTAGE",
+                 "percentages":[{"userId":%d,"percent":50},{"userId":%d,"percent":50}]}"""
+                .formatted(ownerId, friendId, ownerId))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.splitType").value("PERCENTAGE"))
+                .andExpect(jsonPath("$.shares[0].user.id").value(ownerId))
+                .andExpect(jsonPath("$.shares[0].amount").value(0.03))
+                .andExpect(jsonPath("$.shares[1].amount").value(0.02)));
+
+        assertSharesSumTo(created, 0.05);
+
+        api.postJson(expensesPath(), ownerToken, """
+                {"description":"Hotel","amount":1000.00,"paidBy":%d,"splitType":"PERCENTAGE",
+                 "percentages":[{"userId":%d,"percent":70},{"userId":%d,"percent":30}]}"""
+                .formatted(friendId, ownerId, friendId))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.shares[0].amount").value(700.00))
+                .andExpect(jsonPath("$.shares[1].amount").value(300.00));
+    }
+
+    @Test
+    void percentagesMustAddUpTo100() throws Exception {
+        api.postJson(expensesPath(), ownerToken, """
+                {"description":"Hotel","amount":1000.00,"paidBy":%d,"splitType":"PERCENTAGE",
+                 "percentages":[{"userId":%d,"percent":60},{"userId":%d,"percent":30}]}"""
+                .formatted(ownerId, ownerId, friendId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.message").value("Percentages add up to 90 but need to add up to 100"))
+                .andExpect(jsonPath("$.path").value(expensesPath()))
+                .andExpect(jsonPath("$.fieldErrors").doesNotExist());
+    }
+
+    @Test
+    void rejectsBadPercentageInput() throws Exception {
+        api.postJson(expensesPath(), ownerToken, """
+                {"description":"Hotel","amount":100.00,"paidBy":%d,"splitType":"PERCENTAGE",
+                 "percentages":[{"userId":%d,"percent":-10},{"userId":%d,"percent":110}]}"""
+                .formatted(ownerId, ownerId, friendId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors['percentages[0].percent']").value("percent must be greater than zero"));
+
+        api.postJson(expensesPath(), ownerToken, """
+                {"description":"Hotel","amount":100.00,"paidBy":%d,"splitType":"PERCENTAGE"}"""
+                .formatted(ownerId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("A PERCENTAGE split needs at least one percentage"));
+
+        long outsiderId = ownerId + friendId + 500;
+        api.postJson(expensesPath(), ownerToken, """
+                {"description":"Hotel","amount":100.00,"paidBy":%d,"splitType":"PERCENTAGE",
+                 "percentages":[{"userId":%d,"percent":50},{"userId":%d,"percent":50}]}"""
+                .formatted(ownerId, ownerId, outsiderId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("User " + outsiderId + " is not a member of this group"));
+
+        api.postJson(expensesPath(), ownerToken, """
+                {"description":"Hotel","amount":100.00,"paidBy":%d,"splitType":"PERCENTAGE",
+                 "percentages":[{"userId":%d,"percent":50},{"userId":%d,"percent":50}]}"""
+                .formatted(ownerId, ownerId, ownerId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("User " + ownerId + " appears more than once in percentages"));
+    }
+
+    @Test
+    void percentagesOnlyApplyToPercentageSplits() throws Exception {
+        api.postJson(expensesPath(), ownerToken, """
+                {"description":"Hotel","amount":100.00,"paidBy":%d,"splitType":"EQUAL",
+                 "percentages":[{"userId":%d,"percent":100}]}"""
+                .formatted(ownerId, ownerId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(
+                        "percentages only applies to PERCENTAGE splits, use participantIds for EQUAL"));
+
+        api.postJson(expensesPath(), ownerToken, """
+                {"description":"Hotel","amount":100.00,"paidBy":%d,"splitType":"PERCENTAGE",
+                 "shares":[{"userId":%d,"amount":100.00}]}"""
+                .formatted(ownerId, ownerId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(
+                        "shares only applies to EXACT splits, use percentages for PERCENTAGE"));
+    }
+
+    @Test
     void payerMustBeAGroupMember() throws Exception {
         api.postJson(expensesPath(), ownerToken, """
                 {"description":"Hotel","amount":100.00,"paidBy":%d,"splitType":"EQUAL"}"""

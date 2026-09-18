@@ -88,6 +88,87 @@ class MoneySplitterTests {
                 .hasMessageContaining("2 decimal places");
     }
 
+    @Test
+    void splitsByPercentageWhenItDividesCleanly() {
+        Map<Long, BigDecimal> shares = MoneySplitter.splitByPercentage(
+                new BigDecimal("1000.00"),
+                Map.of(1L, new BigDecimal("50"), 2L, new BigDecimal("30"), 3L, new BigDecimal("20")));
+
+        assertThat(shares).containsExactly(
+                Map.entry(1L, new BigDecimal("500.00")),
+                Map.entry(2L, new BigDecimal("300.00")),
+                Map.entry(3L, new BigDecimal("200.00")));
+    }
+
+    @Test
+    void percentageRoundingHandsLeftoverPaiseToTheLowestIds() {
+        // 33.33% of 10.00 is 3.333, so everyone rounds down to 3.33 and the one
+        // paisa left over goes to user 1.
+        BigDecimal total = new BigDecimal("10.00");
+        Map<Long, BigDecimal> shares = MoneySplitter.splitByPercentage(total, Map.of(
+                3L, new BigDecimal("33.34"), 1L, new BigDecimal("33.33"), 2L, new BigDecimal("33.33")));
+
+        assertThat(shares).containsExactly(
+                Map.entry(1L, new BigDecimal("3.34")),
+                Map.entry(2L, new BigDecimal("3.33")),
+                Map.entry(3L, new BigDecimal("3.33")));
+        assertThat(sum(shares)).isEqualByComparingTo(total);
+    }
+
+    @Test
+    void percentageSharesAlwaysAddBackUpAndStayWithinAPaisaOfExact() {
+        List<Map<Long, BigDecimal>> splits = List.of(
+                Map.of(1L, new BigDecimal("33.33"), 2L, new BigDecimal("33.33"), 3L, new BigDecimal("33.34")),
+                Map.of(1L, new BigDecimal("12.5"), 2L, new BigDecimal("12.5"), 3L, new BigDecimal("75")),
+                Map.of(1L, new BigDecimal("0.01"), 2L, new BigDecimal("99.99")),
+                Map.of(1L, new BigDecimal("14.29"), 2L, new BigDecimal("14.29"), 3L, new BigDecimal("14.29"),
+                        4L, new BigDecimal("14.29"), 5L, new BigDecimal("14.28"), 6L, new BigDecimal("14.28"),
+                        7L, new BigDecimal("14.28")));
+
+        for (String amount : List.of("0.01", "0.07", "1.00", "10.01", "99.99", "1234.56")) {
+            BigDecimal total = new BigDecimal(amount);
+
+            for (Map<Long, BigDecimal> percentages : splits) {
+                Map<Long, BigDecimal> shares = MoneySplitter.splitByPercentage(total, percentages);
+
+                assertThat(sum(shares)).as("%s split %s", total, percentages).isEqualByComparingTo(total);
+
+                percentages.forEach((userId, percent) -> {
+                    BigDecimal exact = total.multiply(percent).divide(new BigDecimal("100"));
+                    assertThat(shares.get(userId).subtract(exact).abs())
+                            .as("user %d on %s", userId, total)
+                            .isLessThan(new BigDecimal("0.01"));
+                });
+            }
+        }
+    }
+
+    @Test
+    void handlesVeryLargeAmountsWithoutOverflowing() {
+        // In paise times basis points this is far past what a long can hold.
+        BigDecimal total = new BigDecimal("999999999999999.99");
+        Map<Long, BigDecimal> shares = MoneySplitter.splitByPercentage(
+                total, Map.of(1L, new BigDecimal("33.33"), 2L, new BigDecimal("66.67")));
+
+        assertThat(sum(shares)).isEqualByComparingTo(total);
+    }
+
+    @Test
+    void rejectsPercentagesThatDoNotAddUpTo100() {
+        assertThatThrownBy(() -> MoneySplitter.splitByPercentage(
+                        new BigDecimal("10.00"), Map.of(1L, new BigDecimal("50"), 2L, new BigDecimal("40.5"))))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessage("Percentages add up to 90.5 but need to add up to 100");
+    }
+
+    @Test
+    void rejectsPercentagesFinerThanTwoDecimalPlaces() {
+        assertThatThrownBy(() -> MoneySplitter.splitByPercentage(
+                        new BigDecimal("10.00"), Map.of(1L, new BigDecimal("33.333"), 2L, new BigDecimal("66.667"))))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessage("Percentages cannot be more precise than 2 decimal places");
+    }
+
     private BigDecimal sum(Map<Long, BigDecimal> shares) {
         return shares.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
     }
