@@ -85,6 +85,42 @@ export function useCreateExpense(groupId: number) {
   })
 }
 
+export function useDeleteExpense(groupId: number) {
+  const refresh = useRefreshGroup(groupId)
+  return useMutation({
+    mutationFn: (expenseId: number) => api.deleteExpense(groupId, expenseId),
+    onSuccess: refresh,
+  })
+}
+
+export function useDeleteSettlement(groupId: number) {
+  const refresh = useRefreshGroup(groupId)
+  return useMutation({
+    mutationFn: (settlementId: number) => api.deleteSettlement(groupId, settlementId),
+    onSuccess: refresh,
+  })
+}
+
+export function useRemoveMember(groupId: number) {
+  const refresh = useRefreshGroup(groupId)
+  return useMutation({
+    mutationFn: (userId: number) => api.removeMember(groupId, userId),
+    onSuccess: refresh,
+  })
+}
+
+/** Drops everything cached for the group so nothing tries to refetch it after it's gone. */
+export function useDeleteGroup(groupId: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => api.deleteGroup(groupId),
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: keys.group(groupId) })
+      return queryClient.invalidateQueries({ queryKey: keys.groups, exact: true })
+    },
+  })
+}
+
 export function useRecordSettlement(groupId: number) {
   const refresh = useRefreshGroup(groupId)
   return useMutation({

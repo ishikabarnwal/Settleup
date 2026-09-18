@@ -70,3 +70,14 @@ export async function signInThroughUi(page: Page, email: string) {
   await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
   await page.getByRole('button', { name: 'Sign in' }).click()
 }
+
+export async function removeMemberViaApi(page: Page, owner: TestUser, groupId: number, member: TestUser) {
+  const response = await page.request.delete(`/api/groups/${groupId}/members/${member.user.id}`, {
+    headers: { Authorization: `Bearer ${owner.token}` },
+  })
+  expect(response.ok(), `remove member -> ${response.status()} ${await response.text()}`).toBeTruthy()
+}
+
+export async function getViaApi(page: Page, user: TestUser, path: string) {
+  return page.request.get(path, { headers: { Authorization: `Bearer ${user.token}` } })
+}

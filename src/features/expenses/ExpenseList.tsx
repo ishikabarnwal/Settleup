@@ -1,11 +1,16 @@
 import clsx from 'clsx'
-import { ChevronDown, Plus, Receipt } from 'lucide-react'
+import { ChevronDown, Plus, Receipt, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
 import { Avatar } from '../../components/ui/Avatar'
 import { Button } from '../../components/ui/Button'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { EmptyState } from '../../components/ui/EmptyState'
+import { errorMessage } from '../../lib/api'
 import { useCurrentUser } from '../../lib/auth'
 import { formatDateTime } from '../../lib/dates'
 import { formatPaise, toPaise } from '../../lib/money'
+import { useDeleteExpense } from '../../lib/queries'
 import type { Expense, SplitType } from '../../lib/types'
 
 const splitLabel: Record<SplitType, string> = {
@@ -17,7 +22,9 @@ const splitLabel: Record<SplitType, string> = {
 const dayFormat = new Intl.DateTimeFormat('en-IN', { day: 'numeric' })
 const monthFormat = new Intl.DateTimeFormat('en-IN', { month: 'short' })
 
-export function ExpenseList({ expenses, onAdd }: { expenses: Expense[]; onAdd: () => void }) {
+export function ExpenseList({ groupId, expenses, onAdd }: { groupId: number; expenses: Expense[]; onAdd: () => void }) {
+  const [deleting, setDeleting] = useState<Expense | null>(null)
+
   if (expenses.length === 0) {
     return (
       <EmptyState
@@ -36,15 +43,62 @@ export function ExpenseList({ expenses, onAdd }: { expenses: Expense[]; onAdd: (
 
   // The backend already returns these newest first.
   return (
-    <ul className="space-y-2.5" aria-label="Expenses">
-      {expenses.map((expense) => (
-        <ExpenseItem key={expense.id} expense={expense} />
-      ))}
-    </ul>
+    <>
+      <ul className="space-y-2.5" aria-label="Expenses">
+        {expenses.map((expense) => (
+          <ExpenseItem key={expense.id} expense={expense} onDelete={() => setDeleting(expense)} />
+        ))}
+      </ul>
+      <DeleteExpenseDialog groupId={groupId} expense={deleting} onClose={() => setDeleting(null)} />
+    </>
   )
 }
 
-function ExpenseItem({ expense }: { expense: Expense }) {
+function DeleteExpenseDialog({
+  groupId,
+  expense,
+  onClose,
+}: {
+  groupId: number
+  expense: Expense | null
+  onClose: () => void
+}) {
+  const deleteExpense = useDeleteExpense(groupId)
+  const close = () => {
+    deleteExpense.reset()
+    onClose()
+  }
+
+  return (
+    <ConfirmDialog
+      open={expense !== null}
+      title="Delete this expense?"
+      confirmLabel="Delete expense"
+      pending={deleteExpense.isPending}
+      error={deleteExpense.isError ? errorMessage(deleteExpense.error) : null}
+      onClose={close}
+      onConfirm={() =>
+        expense &&
+        deleteExpense.mutate(expense.id, {
+          onSuccess: () => {
+            toast.success(`Deleted ${expense.description}`)
+            close()
+          },
+        })
+      }
+    >
+      {expense && (
+        <p>
+          <span className="font-medium text-stone-900">{expense.description}</span> ({formatPaise(toPaise(expense.amount))})
+          will be removed for everyone in the group, and balances will be worked out again without it. This can't be
+          undone.
+        </p>
+      )}
+    </ConfirmDialog>
+  )
+}
+
+function ExpenseItem({ expense, onDelete }: { expense: Expense; onDelete: () => void }) {
   const me = useCurrentUser()
   const date = new Date(expense.createdAt)
   const paidByMe = expense.paidBy.id === me.id
@@ -104,6 +158,11 @@ function ExpenseItem({ expense }: { expense: Expense }) {
               </li>
             ))}
           </ul>
+          <div className="mt-3 flex justify-end border-t border-stone-100 pt-3">
+            <Button size="sm" variant="danger" icon={<Trash2 className="size-4" />} onClick={onDelete}>
+              Delete expense
+            </Button>
+          </div>
         </div>
       </details>
     </li>

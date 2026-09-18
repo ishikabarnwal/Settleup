@@ -227,7 +227,7 @@ function ExpensesTab({ groupId, onAdd }: { groupId: number; onAdd: () => void })
   const expenses = useExpenses(groupId)
   return (
     <Loaded query={expenses} what="expenses">
-      {(data) => <ExpenseList expenses={data} onAdd={onAdd} />}
+      {(data) => <ExpenseList groupId={groupId} expenses={data} onAdd={onAdd} />}
     </Loaded>
   )
 }

@@ -117,10 +117,18 @@ export const api = {
   addMember: (groupId: number, email: string) =>
     request<GroupDetail>('POST', `/api/groups/${groupId}/members`, { body: { email } }),
 
+  removeMember: (groupId: number, userId: number) =>
+    request<GroupDetail>('DELETE', `/api/groups/${groupId}/members/${userId}`),
+
+  deleteGroup: (groupId: number) => request<void>('DELETE', `/api/groups/${groupId}`),
+
   expenses: (groupId: number) => request<Expense[]>('GET', `/api/groups/${groupId}/expenses`),
 
   createExpense: (groupId: number, body: CreateExpenseRequest, idempotencyKey: string) =>
     request<Expense>('POST', `/api/groups/${groupId}/expenses`, { body, idempotencyKey }),
+
+  deleteExpense: (groupId: number, expenseId: number) =>
+    request<void>('DELETE', `/api/groups/${groupId}/expenses/${expenseId}`),
 
   balances: (groupId: number) => request<MemberBalance[]>('GET', `/api/groups/${groupId}/balances`),
 
@@ -131,6 +139,9 @@ export const api = {
 
   recordSettlement: (groupId: number, body: CreateSettlementRequest, idempotencyKey: string) =>
     request<Settlement>('POST', `/api/groups/${groupId}/settlements`, { body, idempotencyKey }),
+
+  deleteSettlement: (groupId: number, settlementId: number) =>
+    request<void>('DELETE', `/api/groups/${groupId}/settlements/${settlementId}`),
 }
 
 /** Turns anything thrown by a request into a sentence worth showing. */
