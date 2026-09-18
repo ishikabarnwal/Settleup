@@ -208,7 +208,7 @@ function GroupContent({ group }: { group: GroupDetail }) {
         </div>
 
         <aside>
-          <MembersCard groupId={group.id} members={group.members} />
+          <MembersCard groupId={group.id} groupName={group.name} members={group.members} />
         </aside>
       </div>
 

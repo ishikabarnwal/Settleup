@@ -1,19 +1,31 @@
-import { UserPlus } from 'lucide-react'
+import { UserMinus, UserPlus } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { Avatar } from '../../components/ui/Avatar'
 import { Button } from '../../components/ui/Button'
+import { ConfirmDialog } from '../../components/ui/ConfirmDialog'
 import { Input } from '../../components/ui/Field'
 import { ApiError, errorMessage } from '../../lib/api'
 import { useCurrentUser } from '../../lib/auth'
-import { useAddMember } from '../../lib/queries'
+import { useAddMember, useRemoveMember } from '../../lib/queries'
 import type { GroupMember } from '../../lib/types'
 
 const emailSchema = z.email()
 
-export function MembersCard({ groupId, members }: { groupId: number; members: GroupMember[] }) {
+export function MembersCard({
+  groupId,
+  groupName,
+  members,
+}: {
+  groupId: number
+  groupName: string
+  members: GroupMember[]
+}) {
   const me = useCurrentUser()
+  // Only the owner can remove people, so only the owner gets the buttons.
+  const iAmOwner = members.some((m) => m.id === me.id && m.role === 'OWNER')
+  const [removing, setRemoving] = useState<GroupMember | null>(null)
   const addMember = useAddMember(groupId)
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -60,6 +72,17 @@ export function MembersCard({ groupId, members }: { groupId: number; members: Gr
             {member.role === 'OWNER' && (
               <span className="rounded-full bg-blush/50 px-2 py-0.5 text-xs font-medium text-wine">Owner</span>
             )}
+            {iAmOwner && member.role !== 'OWNER' && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="-mr-2 px-2 text-stone-500 hover:text-rose"
+                icon={<UserMinus className="size-4" />}
+                aria-label={`Remove ${member.name}`}
+                title={`Remove ${member.name}`}
+                onClick={() => setRemoving(member)}
+              />
+            )}
           </li>
         ))}
       </ul>
@@ -92,6 +115,55 @@ export function MembersCard({ groupId, members }: { groupId: number; members: Gr
           </p>
         )}
       </form>
+
+      <RemoveMemberDialog groupId={groupId} groupName={groupName} member={removing} onClose={() => setRemoving(null)} />
     </section>
+  )
+}
+
+function RemoveMemberDialog({
+  groupId,
+  groupName,
+  member,
+  onClose,
+}: {
+  groupId: number
+  groupName: string
+  member: GroupMember | null
+  onClose: () => void
+}) {
+  const removeMember = useRemoveMember(groupId)
+  const close = () => {
+    removeMember.reset()
+    onClose()
+  }
+
+  return (
+    <ConfirmDialog
+      open={member !== null}
+      title={member ? `Remove ${member.name}?` : 'Remove member?'}
+      confirmLabel="Remove"
+      pending={removeMember.isPending}
+      // The usual refusal is a balance that isn't zero yet; the backend says
+      // whose and how much, so show its message as is.
+      error={removeMember.isError ? errorMessage(removeMember.error) : null}
+      onClose={close}
+      onConfirm={() =>
+        member &&
+        removeMember.mutate(member.id, {
+          onSuccess: () => {
+            toast.success(`${member.name} was removed from ${groupName}`)
+            close()
+          },
+        })
+      }
+    >
+      {member && (
+        <p>
+          <span className="font-medium text-stone-900">{member.name}</span> will lose access to {groupName}. Their past
+          expenses and payments stay in the history. People can only be removed once they're settled up.
+        </p>
+      )}
+    </ConfirmDialog>
   )
 }

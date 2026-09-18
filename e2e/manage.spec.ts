@@ -134,3 +134,67 @@ test.describe('deleting a payment', () => {
     await expect(dialog).toBeVisible()
   })
 })
+
+test.describe('removing a member', () => {
+  const members = (page: Page) => page.getByRole('region', { name: 'Members' })
+
+  test('only the owner gets the option, and never for themselves', async ({ page }) => {
+    const { ishika, riya, group } = await twoPersonGroup(page)
+
+    await useSession(page, riya)
+    await page.goto(`/groups/${group.id}`)
+    await expect(members(page).getByRole('listitem')).toHaveCount(2)
+    await expect(members(page).getByRole('button', { name: /^Remove / })).toHaveCount(0)
+
+    // A second tab signed in as the owner.
+    const owner = await page.context().newPage()
+    await useSession(owner, ishika)
+    await owner.goto(`/groups/${group.id}`)
+    await expect(members(owner).getByRole('button', { name: 'Remove Riya' })).toBeVisible()
+    await expect(members(owner).getByRole('button', { name: 'Remove Ishika' })).toHaveCount(0)
+  })
+
+  test('asks first, then removes someone who is settled up', async ({ page }) => {
+    const { ishika, riya, group } = await twoPersonGroup(page)
+    await useSession(page, ishika)
+    await page.goto(`/groups/${group.id}`)
+
+    await members(page).getByRole('button', { name: 'Remove Riya' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Remove Riya?' })
+    await expect(dialog).toContainText('Riya will lose access to Goa trip')
+
+    await dialog.getByRole('button', { name: 'Cancel' }).click()
+    await expect(members(page).getByRole('listitem')).toHaveCount(2)
+
+    await members(page).getByRole('button', { name: 'Remove Riya' }).click()
+    await dialog.getByRole('button', { name: 'Remove' }).click()
+
+    await expect(dialog).toBeHidden()
+    await expect(page.getByText('Riya was removed from Goa trip')).toBeVisible()
+    await expect(members(page).getByRole('listitem')).toHaveCount(1)
+
+    const detail = await (await getViaApi(page, ishika, `/api/groups/${group.id}`)).json()
+    expect(detail.members.map((m: { name: string }) => m.name)).toEqual(['Ishika'])
+    expect((await getViaApi(page, riya, `/api/groups/${group.id}`)).status()).toBe(403)
+  })
+
+  test("shows why someone who still owes money can't be removed", async ({ page }) => {
+    const { ishika, group } = await twoPersonGroup(page)
+    await addExpenseViaApi(page, ishika, group.id, { description: 'Villa', amount: 1000, paidBy: ishika.user.id, splitType: 'EQUAL' })
+    await useSession(page, ishika)
+    await page.goto(`/groups/${group.id}`)
+
+    await members(page).getByRole('button', { name: 'Remove Riya' }).click()
+    const dialog = page.getByRole('dialog', { name: 'Remove Riya?' })
+    await dialog.getByRole('button', { name: 'Remove' }).click()
+
+    await expect(dialog.getByRole('alert')).toHaveText(
+      "Riya can't be removed while their balance in this group is -500.00. Settle up first.",
+    )
+    await expect(dialog).toBeVisible()
+
+    await dialog.getByRole('button', { name: 'Cancel' }).click()
+    await expect(members(page).getByRole('listitem')).toHaveCount(2)
+    await expect(members(page)).toContainText('Riya')
+  })
+})
