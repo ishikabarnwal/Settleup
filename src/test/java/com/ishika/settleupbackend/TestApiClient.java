@@ -42,6 +42,14 @@ class TestApiClient {
                 .content(json));
     }
 
+    ResultActions postJson(String path, String token, String idempotencyKey, String json) throws Exception {
+        return mockMvc.perform(post(path)
+                .header("Authorization", "Bearer " + token)
+                .header("Idempotency-Key", idempotencyKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json));
+    }
+
     ResultActions getJson(String path, String token) throws Exception {
         return mockMvc.perform(get(path).header("Authorization", "Bearer " + token));
     }

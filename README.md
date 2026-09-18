@@ -149,6 +149,26 @@ A **negative balance** means the member owes money.
 
 The settlement planner then matches debtors with creditors to generate a short list of payments that clears the group's balances.
 
+## Safe Retries (Idempotency-Key)
+
+Creating an expense or recording a settlement can be retried safely by sending an `Idempotency-Key` header, for example a UUID generated once per action on the client:
+
+```bash
+curl -X POST http://localhost:8080/api/groups/1/settlements \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Idempotency-Key: 5f1c9a2e-7b1d-4c1e-9a53-2d7c0b6f8e10" \
+  -H 'Content-Type: application/json' \
+  -d '{"paidBy":2,"paidTo":1,"amount":500.00}'
+```
+
+- **Same key, same request** within 24 hours: nothing new is created. You get the original `201` response back, with an `Idempotent-Replayed: true` header.
+- **Same key, different request** (a different body or a different endpoint): `409 Conflict`. Use a new key for a new request.
+- **No key**: the request behaves as normal and every POST creates something.
+- Keys are per user, so two people can't collide. They can be 1–255 characters.
+- A request that fails (for example a 400 for bad input) doesn't use up its key, so you can fix it and retry with the same one.
+- If two requests with the same key arrive at the same moment, only one expense or settlement is created and both get the same response.
+- After 24 hours (`app.idempotency.window`) a key can be reused. Expired keys are cleaned up hourly.
+
 ## Deleting and Removing
 
 Balances are never stored. They're recalculated from the remaining expenses and settlements on every request, so deleting either one can't leave them out of date.
