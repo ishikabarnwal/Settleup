@@ -9,6 +9,7 @@ import com.ishika.settleupbackend.group.GroupService;
 import com.ishika.settleupbackend.security.CurrentUser;
 import com.ishika.settleupbackend.user.User;
 import com.ishika.settleupbackend.user.UserResponse;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -26,12 +27,19 @@ import org.springframework.transaction.annotation.Transactional;
  * splits into shares that add back up to its total, and every settlement moves
  * the same amount between two people, the nets across a group always add up to
  * zero.
+ *
+ * <p>Nothing here is stored. Balances are rebuilt from the expenses and
+ * settlements on every call, so deleting either one can never leave them stale.
+ *
+ * <p>The history can mention people who have since been removed from the group.
+ * Removal is only allowed at a zero balance, so they are left out of the result
+ * unless something has put them back in the red or black.
  */
 @Service
 @Transactional(readOnly = true)
 public class BalanceService {
 
-    /** Indexes into the per-member running totals. */
+    /** Indexes into the per-person running totals. */
     private static final int PAID = 0;
     private static final int SHARE = 1;
     private static final int SETTLED_OUT = 2;
@@ -59,63 +67,58 @@ public class BalanceService {
     }
 
     public List<MemberBalance> balancesFor(Group group) {
-        Map<Long, long[]> totals = totalsFor(group);
-        Map<Long, User> membersById = membersById(group);
+        Map<Long, User> people = new LinkedHashMap<>();
+        group.getMembers().forEach(member -> people.put(member.getId(), member));
+
+        Map<Long, long[]> totals = new LinkedHashMap<>();
+        people.keySet().forEach(userId -> totals.put(userId, new long[4]));
+
+        for (Expense expense : expenseRepository.findAllForGroup(group.getId())) {
+            add(totals, people, expense.getPaidBy(), PAID, expense.getAmount());
+
+            for (ExpenseShare share : expense.getShares()) {
+                add(totals, people, share.getUser(), SHARE, share.getAmount());
+            }
+        }
+
+        for (Settlement settlement : settlementRepository.findAllForGroup(group.getId())) {
+            add(totals, people, settlement.getPaidBy(), SETTLED_OUT, settlement.getAmount());
+            add(totals, people, settlement.getPaidTo(), SETTLED_IN, settlement.getAmount());
+        }
 
         List<MemberBalance> balances = new ArrayList<>();
 
-        totals.forEach((userId, totals4) -> balances.add(new MemberBalance(
-                UserResponse.from(membersById.get(userId)),
-                MoneySplitter.fromMinorUnits(totals4[PAID]),
-                MoneySplitter.fromMinorUnits(totals4[SHARE]),
-                MoneySplitter.fromMinorUnits(totals4[SETTLED_OUT]),
-                MoneySplitter.fromMinorUnits(totals4[SETTLED_IN]),
-                MoneySplitter.fromMinorUnits(net(totals4)))));
+        totals.forEach((userId, sums) -> {
+            long net = sums[PAID] - sums[SHARE] + sums[SETTLED_OUT] - sums[SETTLED_IN];
+            if (net == 0 && !group.hasMember(people.get(userId))) {
+                return;
+            }
+
+            balances.add(new MemberBalance(
+                    UserResponse.from(people.get(userId)),
+                    MoneySplitter.fromMinorUnits(sums[PAID]),
+                    MoneySplitter.fromMinorUnits(sums[SHARE]),
+                    MoneySplitter.fromMinorUnits(sums[SETTLED_OUT]),
+                    MoneySplitter.fromMinorUnits(sums[SETTLED_IN]),
+                    MoneySplitter.fromMinorUnits(net)));
+        });
 
         balances.sort(Comparator.comparing(balance -> balance.user().id()));
 
         return balances;
     }
 
-    /** Net position per member in minor units, which is what the planner works on. */
-    public Map<Long, Long> netMinorByUserId(Group group) {
-        Map<Long, Long> nets = new LinkedHashMap<>();
-        totalsFor(group).forEach((userId, totals) -> nets.put(userId, net(totals)));
-        return nets;
+    /** One person's net in the group, zero if they have no history there. */
+    public long netMinorFor(Group group, Long userId) {
+        return balancesFor(group).stream()
+                .filter(balance -> balance.user().id().equals(userId))
+                .findFirst()
+                .map(balance -> MoneySplitter.toMinorUnits(balance.net()))
+                .orElse(0L);
     }
 
-    private Map<Long, long[]> totalsFor(Group group) {
-        Map<Long, long[]> totals = new LinkedHashMap<>();
-        membersById(group).keySet().forEach(userId -> totals.put(userId, new long[4]));
-
-        for (Expense expense : expenseRepository.findAllForGroup(group.getId())) {
-            totalsFor(totals, expense.getPaidBy().getId())[PAID] += MoneySplitter.toMinorUnits(expense.getAmount());
-
-            for (ExpenseShare share : expense.getShares()) {
-                totalsFor(totals, share.getUser().getId())[SHARE] += MoneySplitter.toMinorUnits(share.getAmount());
-            }
-        }
-
-        for (Settlement settlement : settlementRepository.findAllForGroup(group.getId())) {
-            long amount = MoneySplitter.toMinorUnits(settlement.getAmount());
-            totalsFor(totals, settlement.getPaidBy().getId())[SETTLED_OUT] += amount;
-            totalsFor(totals, settlement.getPaidTo().getId())[SETTLED_IN] += amount;
-        }
-
-        return totals;
-    }
-
-    private long[] totalsFor(Map<Long, long[]> totals, Long userId) {
-        return totals.computeIfAbsent(userId, key -> new long[4]);
-    }
-
-    private long net(long[] totals) {
-        return totals[PAID] - totals[SHARE] + totals[SETTLED_OUT] - totals[SETTLED_IN];
-    }
-
-    private Map<Long, User> membersById(Group group) {
-        Map<Long, User> membersById = new LinkedHashMap<>();
-        group.getMembers().forEach(member -> membersById.put(member.getId(), member));
-        return membersById;
+    private void add(Map<Long, long[]> totals, Map<Long, User> people, User user, int column, BigDecimal amount) {
+        people.putIfAbsent(user.getId(), user);
+        totals.computeIfAbsent(user.getId(), key -> new long[4])[column] += MoneySplitter.toMinorUnits(amount);
     }
 }

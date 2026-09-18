@@ -1,6 +1,7 @@
 package com.ishika.settleupbackend.settlement;
 
 import com.ishika.settleupbackend.exception.BadRequestException;
+import com.ishika.settleupbackend.exception.NotFoundException;
 import com.ishika.settleupbackend.expense.MoneySplitter;
 import com.ishika.settleupbackend.group.Group;
 import com.ishika.settleupbackend.group.GroupService;
@@ -64,16 +65,41 @@ public class SettlementService {
                 .toList();
     }
 
+    /**
+     * Balances are worked out from the history on every read, so removing a
+     * settlement is all it takes to undo it.
+     */
+    @Transactional
+    public void delete(Long groupId, Long settlementId) {
+        Group group = groupService.requireMembership(groupId, currentUser.require());
+
+        Settlement settlement = settlementRepository
+                .findById(settlementId)
+                .filter(found -> found.getGroup().getId().equals(groupId))
+                .orElseThrow(() -> new NotFoundException(
+                        "Settlement " + settlementId + " not found in group " + groupId));
+
+        groupService.requireStillMembers(group, "settlement", settlement.getPaidBy(), settlement.getPaidTo());
+
+        settlementRepository.delete(settlement);
+    }
+
     /** The shortest set of payments that would bring the whole group back to zero. */
     public List<SuggestedPayment> suggestPayments(Long groupId) {
         Group group = groupService.requireMembership(groupId, currentUser.require());
 
-        Map<Long, User> membersById = membersById(group);
+        Map<Long, UserResponse> usersById = new LinkedHashMap<>();
+        Map<Long, Long> netByUserId = new LinkedHashMap<>();
 
-        return SettlementPlanner.plan(balanceService.netMinorByUserId(group)).stream()
+        for (MemberBalance balance : balanceService.balancesFor(group)) {
+            usersById.put(balance.user().id(), balance.user());
+            netByUserId.put(balance.user().id(), MoneySplitter.toMinorUnits(balance.net()));
+        }
+
+        return SettlementPlanner.plan(netByUserId).stream()
                 .map(payment -> new SuggestedPayment(
-                        UserResponse.from(membersById.get(payment.fromUserId())),
-                        UserResponse.from(membersById.get(payment.toUserId())),
+                        usersById.get(payment.fromUserId()),
+                        usersById.get(payment.toUserId()),
                         MoneySplitter.fromMinorUnits(payment.amountMinor())))
                 .toList();
     }

@@ -63,6 +63,20 @@ public class GroupService {
     }
 
     /**
+     * Removed members are only ever allowed to leave at a zero balance. Deleting
+     * an expense or settlement that involves one of them would quietly give them
+     * a balance again in a group they can no longer see, so that is refused.
+     */
+    public void requireStillMembers(Group group, String record, User... people) {
+        for (User person : people) {
+            if (!group.hasMember(person)) {
+                throw new BadRequestException("This %s can't be deleted because %s is no longer in the group"
+                        .formatted(record, person.getName()));
+            }
+        }
+    }
+
+    /**
      * Loads a group and checks the caller belongs to it. Every group-scoped feature
      * goes through here so the membership rule lives in one place.
      */

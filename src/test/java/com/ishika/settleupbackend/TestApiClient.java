@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -43,6 +44,10 @@ class TestApiClient {
 
     ResultActions getJson(String path, String token) throws Exception {
         return mockMvc.perform(get(path).header("Authorization", "Bearer " + token));
+    }
+
+    ResultActions delete(String path, String token) throws Exception {
+        return mockMvc.perform(MockMvcRequestBuilders.delete(path).header("Authorization", "Bearer " + token));
     }
 
     JsonNode json(ResultActions actions) throws Exception {

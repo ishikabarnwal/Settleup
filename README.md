@@ -149,6 +149,15 @@ A **negative balance** means the member owes money.
 
 The settlement planner then matches debtors with creditors to generate a short list of payments that clears the group's balances.
 
+## Deleting and Removing
+
+Balances are never stored. They're recalculated from the remaining expenses and settlements on every request, so deleting either one can't leave them out of date.
+
+- **Deleting an expense** is allowed at any time, even after people have settled up. Balances update straight away; if someone had already paid their share of a deleted expense, they simply show as owed that money back.
+- **Deleting a settlement** undoes the payment, so whatever it covered is owed again.
+- **Removing a member** only works once their balance in the group is exactly zero. Otherwise the request fails with a 400 telling you their balance, and nothing changes. Their past expenses and settlements stay in the group's history.
+- Because a removed member has to leave at zero, an expense or settlement that involves someone who has left can't be deleted (400). Deleting it would give them a balance in a group they're no longer part of.
+
 ## Example
 
 ```bash

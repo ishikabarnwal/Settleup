@@ -98,6 +98,10 @@ public class Group {
         return hasMember(user) ? false : members.add(user);
     }
 
+    public boolean removeMember(Long userId) {
+        return members.removeIf(member -> member.getId().equals(userId));
+    }
+
     @Override
     public boolean equals(Object other) {
         if (this == other) {

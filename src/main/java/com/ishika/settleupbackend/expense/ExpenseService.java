@@ -75,7 +75,29 @@ public class ExpenseService {
 
     public ExpenseResponse getOne(Long groupId, Long expenseId) {
         groupService.requireMembership(groupId, currentUser.require());
+        return ExpenseResponse.from(findInGroup(groupId, expenseId));
+    }
 
+    /**
+     * Allowed at any time, including after people have settled up. Balances are
+     * rebuilt from whatever expenses and settlements remain, so they move to
+     * reflect the deletion straight away; someone who already paid their share
+     * of a deleted expense simply shows as owed that money back.
+     */
+    @Transactional
+    public void delete(Long groupId, Long expenseId) {
+        Group group = groupService.requireMembership(groupId, currentUser.require());
+        Expense expense = findInGroup(groupId, expenseId);
+
+        List<User> involved = new ArrayList<>();
+        involved.add(expense.getPaidBy());
+        expense.getShares().forEach(share -> involved.add(share.getUser()));
+        groupService.requireStillMembers(group, "expense", involved.toArray(User[]::new));
+
+        expenseRepository.delete(expense);
+    }
+
+    private Expense findInGroup(Long groupId, Long expenseId) {
         Expense expense = expenseRepository
                 .findByIdWithShares(expenseId)
                 .orElseThrow(() -> new NotFoundException("Expense " + expenseId + " not found"));
@@ -84,7 +106,7 @@ public class ExpenseService {
             throw new NotFoundException("Expense " + expenseId + " is not in group " + groupId);
         }
 
-        return ExpenseResponse.from(expense);
+        return expense;
     }
 
     /**
