@@ -169,10 +169,10 @@ class RemovalApiTests extends ApiTestBase {
                 .andExpect(jsonPath("$.message").value(
                         "Riya can't be removed while their balance in this group is -1000.00. Settle up first."));
 
-        api.delete(path("/members/" + ishika), riyaToken)
+        api.delete(path("/members/" + tara), ishikaToken)
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(
-                        "Ishika can't be removed while their balance in this group is 2000.00. Settle up first."));
+                        "Tara can't be removed while their balance in this group is -1000.00. Settle up first."));
 
         api.getJson(path(""), ishikaToken).andExpect(jsonPath("$.members.length()").value(3));
 

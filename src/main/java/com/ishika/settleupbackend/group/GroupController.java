@@ -40,6 +40,12 @@ public class GroupController {
         return groupService.getDetail(groupId);
     }
 
+    @DeleteMapping("/{groupId}")
+    public ResponseEntity<Void> delete(@PathVariable Long groupId) {
+        groupService.delete(groupId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{groupId}/members")
     public GroupDetailResponse addMember(
             @PathVariable Long groupId, @Valid @RequestBody AddMemberRequest request) {

@@ -90,6 +90,11 @@ public class Group {
         return members;
     }
 
+    /** The creator owns the group. */
+    public boolean isOwnedBy(User user) {
+        return createdBy.getId().equals(user.getId());
+    }
+
     public boolean hasMember(User user) {
         return members.stream().anyMatch(member -> member.getId().equals(user.getId()));
     }

@@ -149,6 +149,20 @@ A **negative balance** means the member owes money.
 
 The settlement planner then matches debtors with creditors to generate a short list of payments that clears the group's balances.
 
+## Owners and Members
+
+Whoever creates a group is its **owner**. Group details list each member with a `role` of `OWNER` or `MEMBER`.
+
+| Action | Owner | Member |
+|---|---|---|
+| View the group, balances, expenses and settlements | ✓ | ✓ |
+| Add members | ✓ | ✓ |
+| Add or delete expenses and settlements | ✓ | ✓ |
+| Remove members | ✓ | — |
+| Delete the group | ✓ | — |
+
+A member who tries an owner-only action gets a `403` saying so. The owner can't remove themselves; they'd delete the group instead. Deleting a group permanently removes all of its expenses and settlements.
+
 ## Safe Retries (Idempotency-Key)
 
 Creating an expense or recording a settlement can be retried safely by sending an `Idempotency-Key` header, for example a UUID generated once per action on the client:

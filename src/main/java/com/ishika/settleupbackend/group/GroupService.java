@@ -2,7 +2,9 @@ package com.ishika.settleupbackend.group;
 
 import com.ishika.settleupbackend.exception.BadRequestException;
 import com.ishika.settleupbackend.exception.NotFoundException;
+import com.ishika.settleupbackend.expense.ExpenseRepository;
 import com.ishika.settleupbackend.security.CurrentUser;
+import com.ishika.settleupbackend.settlement.SettlementRepository;
 import com.ishika.settleupbackend.user.User;
 import com.ishika.settleupbackend.user.UserRepository;
 import java.util.List;
@@ -16,12 +18,20 @@ public class GroupService {
 
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
+    private final ExpenseRepository expenseRepository;
+    private final SettlementRepository settlementRepository;
     private final CurrentUser currentUser;
 
     public GroupService(
-            GroupRepository groupRepository, UserRepository userRepository, CurrentUser currentUser) {
+            GroupRepository groupRepository,
+            UserRepository userRepository,
+            ExpenseRepository expenseRepository,
+            SettlementRepository settlementRepository,
+            CurrentUser currentUser) {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
+        this.expenseRepository = expenseRepository;
+        this.settlementRepository = settlementRepository;
         this.currentUser = currentUser;
     }
 
@@ -60,6 +70,27 @@ public class GroupService {
         }
 
         return GroupDetailResponse.from(group);
+    }
+
+    /**
+     * Deleting a group takes its whole history with it: expenses, their shares,
+     * settlements and the member list. Only the owner can do it.
+     */
+    @Transactional
+    public void delete(Long groupId) {
+        User caller = currentUser.require();
+        Group group = requireMembership(groupId, caller);
+        requireOwner(group, caller, "delete the group");
+
+        settlementRepository.deleteAll(settlementRepository.findAllForGroup(groupId));
+        expenseRepository.deleteAll(expenseRepository.findAllForGroup(groupId));
+        groupRepository.delete(group);
+    }
+
+    public void requireOwner(Group group, User user, String action) {
+        if (!group.isOwnedBy(user)) {
+            throw new AccessDeniedException("Only the group owner can " + action);
+        }
     }
 
     /**

@@ -32,12 +32,18 @@ public class MemberRemovalService {
 
     @Transactional
     public GroupDetailResponse removeMember(Long groupId, Long userId) {
-        Group group = groupService.requireMembership(groupId, currentUser.require());
+        User caller = currentUser.require();
+        Group group = groupService.requireMembership(groupId, caller);
+        groupService.requireOwner(group, caller, "remove members");
 
         User member = group.getMembers().stream()
                 .filter(candidate -> candidate.getId().equals(userId))
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("User " + userId + " is not a member of this group"));
+
+        if (group.isOwnedBy(member)) {
+            throw new BadRequestException("The owner can't be removed from the group. Delete the group instead.");
+        }
 
         long net = balanceService.netMinorFor(group, userId);
         if (net != 0) {
