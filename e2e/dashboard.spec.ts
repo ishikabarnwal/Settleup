@@ -17,7 +17,9 @@ test('a new user sees the empty state and can create their first group', async (
 
   await expect(dialog).toBeHidden()
   await expect(page.getByText('Goa trip is ready')).toBeVisible()
+  await expect(page).toHaveURL(/\/groups\/\d+$/)
 
+  await page.getByRole('link', { name: 'All groups' }).click()
   const card = page.getByRole('link', { name: /Goa trip/ })
   await expect(card).toContainText('December, 4 nights')
   await expect(card).toContainText("You're settled up")

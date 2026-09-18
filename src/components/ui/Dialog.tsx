@@ -1,22 +1,25 @@
 import clsx from 'clsx'
 import { X } from 'lucide-react'
-import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type FormEvent, type ReactNode } from 'react'
 
 type DialogProps = {
   open: boolean
   onClose: () => void
   title: string
   description?: ReactNode
+  /** Usually a DialogForm, or a DialogBody followed by a DialogFooter. */
   children: ReactNode
-  footer?: ReactNode
   size?: 'md' | 'lg'
 }
 
 /**
  * Built on the native <dialog> element, which gives focus trapping, Escape to
  * close and an inert background for free. On phones it becomes a bottom sheet.
+ *
+ * The body scrolls and the footer doesn't, so the main action stays on screen
+ * however long the form gets.
  */
-export function Dialog({ open, onClose, title, description, children, footer, size = 'md' }: DialogProps) {
+export function Dialog({ open, onClose, title, description, children, size = 'md' }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null)
   const titleId = useId()
 
@@ -49,7 +52,7 @@ export function Dialog({ open, onClose, title, description, children, footer, si
     >
       {open && (
         <div className="flex max-h-[92dvh] flex-col">
-          <header className="flex items-start justify-between gap-4 border-b border-stone-200 px-5 py-4">
+          <header className="flex shrink-0 items-start justify-between gap-4 border-b border-stone-200 px-5 py-4">
             <div>
               <h2 id={titleId} className="text-lg font-semibold text-ink">
                 {title}
@@ -65,14 +68,52 @@ export function Dialog({ open, onClose, title, description, children, footer, si
               <X className="size-5" />
             </button>
           </header>
-          <div className="overflow-y-auto px-5 py-5">{children}</div>
-          {footer && (
-            <footer className="flex flex-col-reverse gap-2 border-t border-stone-200 bg-stone-50 px-5 py-3.5 sm:flex-row sm:justify-end">
-              {footer}
-            </footer>
-          )}
+          {children}
         </div>
       )}
     </dialog>
+  )
+}
+
+export function DialogBody({ children }: { children: ReactNode }) {
+  return <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">{children}</div>
+}
+
+export function DialogFooter({ children }: { children: ReactNode }) {
+  return (
+    <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-stone-200 bg-stone-50 px-5 py-3.5 sm:flex-row sm:justify-end">
+      {children}
+    </footer>
+  )
+}
+
+/** A form laid out as a scrolling body plus a fixed footer, so the submit button is always reachable. */
+export function DialogForm({
+  onSubmit,
+  children,
+  footer,
+}: {
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void
+  children: ReactNode
+  footer: ReactNode
+}) {
+  return (
+    <form
+      noValidate
+      onSubmit={(event) => {
+        onSubmit(event)
+        // On a phone the first problem is often below the fold, and the save
+        // button seems to do nothing. Once React has shown the errors, bring
+        // the first one into view.
+        const form = event.currentTarget
+        requestAnimationFrame(() =>
+          form.querySelector('[aria-invalid="true"], [role="alert"]')?.scrollIntoView({ block: 'center', behavior: 'smooth' }),
+        )
+      }}
+      className="flex min-h-0 flex-1 flex-col"
+    >
+      <DialogBody>{children}</DialogBody>
+      <DialogFooter>{footer}</DialogFooter>
+    </form>
   )
 }

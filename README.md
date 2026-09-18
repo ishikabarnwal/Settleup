@@ -55,16 +55,16 @@ The browser then calls the backend directly, so the backend has to allow this si
 
 ## Tests
 
-Unit tests cover the money maths. The add-expense form previews each person's share before saving, using a copy of the backend's splitting rules, and the tests use the same cases as the backend's own tests so the two can't drift apart.
+Unit tests cover the money maths and the add-expense rules. The form previews each person's share before saving, using a copy of the backend's splitting rules, and the tests use the same cases as the backend's own tests so the two can't drift apart.
 
-End-to-end tests drive the real app in Chromium, at desktop and phone sizes, against a real backend. Start the backend first, then:
+End-to-end tests drive the real app in Chromium, at desktop and phone sizes, against a real backend. They build the app and run it with `vite preview` on port 4173, so they test what actually ships. Start the backend first, then:
 
 ```bash
 npx playwright install chromium   # once
 npm run test:e2e
 ```
 
-Each test registers its own throwaway users, so they don't depend on existing data.
+Each test registers its own throwaway users, so they don't depend on existing data. Besides the happy paths they check things like a save whose response is lost being retried without creating a duplicate (the `Idempotency-Key` at work), and that no page ends up wider than a phone screen.
 
 ## How sign-in is stored
 
@@ -75,7 +75,7 @@ The backend returns a JWT in the response body for use in an `Authorization` hea
 ```text
 src
 ├── components     shared pieces: app shell, logo, and ui/ (buttons, fields, dialogs...)
-├── features       one folder per area: auth, groups
+├── features       one folder per area: auth, groups, expenses, settlements
 ├── lib            API client, session, money maths, form helpers
 └── index.css      Tailwind setup and the palette
 e2e                Playwright tests

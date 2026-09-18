@@ -4,6 +4,7 @@ import { AppShell } from './components/AppShell'
 import { LoginPage } from './features/auth/LoginPage'
 import { RegisterPage } from './features/auth/RegisterPage'
 import { DashboardPage } from './features/groups/DashboardPage'
+import { GroupPage } from './features/groups/GroupPage'
 import { NotFoundPage } from './features/NotFoundPage'
 import { useAuth } from './lib/auth'
 
@@ -60,6 +61,7 @@ export default function App() {
         }
       >
         <Route index element={<DashboardPage />} />
+        <Route path="groups/:groupId" element={<GroupPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

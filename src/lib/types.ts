@@ -85,19 +85,21 @@ export type ApiErrorBody = {
   fieldErrors?: Record<string, string>
 }
 
+// Amounts are sent as numbers built from whole paise (e.g. 107025 / 100), which
+// JSON always writes back out as the exact two-decimal value.
 export type CreateExpenseRequest = {
   description: string
-  amount: string
+  amount: number
   paidBy: number
   splitType: SplitType
   participantIds?: number[]
-  shares?: { userId: number; amount: string }[]
-  percentages?: { userId: number; percent: string }[]
+  shares?: { userId: number; amount: number }[]
+  percentages?: { userId: number; percent: number }[]
 }
 
 export type CreateSettlementRequest = {
   paidBy: number
   paidTo: number
-  amount: string
+  amount: number
   note?: string
 }
