@@ -68,6 +68,12 @@ Hibernate automatically manages the database schema.
 
 Tests use H2 and do not require Docker or PostgreSQL.
 
+## API Docs
+
+Interactive docs (Swagger UI) are served at `http://localhost:8080/swagger-ui.html`, with the raw OpenAPI spec at `/v3/api-docs`. Neither needs a token. To try protected endpoints from the page, call register or login, click **Authorize** and paste the token.
+
+Set `API_DOCS_ENABLED=false` to turn both off, for example in production.
+
 ## API Overview
 
 All endpoints except `/health`, `/api/auth/register`, and `/api/auth/login` require:

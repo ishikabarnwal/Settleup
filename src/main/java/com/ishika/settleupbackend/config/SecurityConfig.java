@@ -31,7 +31,15 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
 
-    private static final String[] PUBLIC_ENDPOINTS = {"/health", "/api/auth/register", "/api/auth/login"};
+    private static final String[] PUBLIC_ENDPOINTS = {
+        "/health",
+        "/api/auth/register",
+        "/api/auth/login",
+        "/swagger-ui.html",
+        "/swagger-ui/**",
+        "/v3/api-docs",
+        "/v3/api-docs/**"
+    };
 
     @Bean
     public SecurityFilterChain securityFilterChain(
