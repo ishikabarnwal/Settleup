@@ -2,10 +2,10 @@ import { ArrowRight, Divide, HandCoins, Scale, Users } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Logo } from '../../components/Logo'
-import { ProductPreview } from '../../components/ProductPreview'
 import { NavPill } from '../../components/NavPill'
 import { buttonClasses, navItemClasses } from '../../components/ui/buttonStyles'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
+import { Hero } from './Hero'
 
 const FRONTEND_REPO = 'https://github.com/ishikabarnwal/settleup-frontend'
 const BACKEND_REPO = 'https://github.com/ishikabarnwal/settleup-backend'
@@ -82,41 +82,6 @@ function LandingHeader() {
         ),
       }}
     />
-  )
-}
-
-function Hero() {
-  return (
-    <section aria-labelledby="hero-heading" className="relative overflow-hidden bg-hero-glow text-white">
-      <div className="page-container relative grid items-center gap-12 pt-32 pb-16 sm:pt-36 sm:pb-24 lg:grid-cols-[minmax(0,1fr)_24rem] lg:pt-44 lg:pb-32">
-        <div className="max-w-2xl">
-          <p className="text-sm font-medium tracking-wide text-blush uppercase">Shared expenses, sorted</p>
-          <h1 id="hero-heading" className="mt-3 text-4xl leading-tight font-semibold tracking-tight sm:text-5xl lg:text-6xl">
-            Split shared costs.
-            <br />
-            <span className="text-blush">Settle up in fewer payments.</span>
-          </h1>
-          <p className="mt-5 max-w-xl text-base text-white/80 sm:text-lg">
-            SettleUp keeps track of who paid for what on trips, in shared flats and across teams, shows where everyone
-            stands, and suggests the fewest payments that would square everyone up.
-          </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link to="/register" className={buttonClasses({ variant: 'secondary', size: 'lg' })}>
-              Get started
-              <ArrowRight className="size-4" />
-            </Link>
-            <Link
-              to="/login"
-              className="inline-flex h-12 items-center justify-center rounded-lg px-5 text-base font-medium text-white/90 ring-1 ring-white/30 ring-inset transition hover:bg-white/10 hover:text-white"
-            >
-              I have an account
-            </Link>
-          </div>
-        </div>
-
-        <ProductPreview className="w-full justify-self-center lg:justify-self-end" />
-      </div>
-    </section>
   )
 }
 
@@ -222,17 +187,19 @@ function WhyDifferent() {
 function ClosingCta() {
   return (
     <section aria-labelledby="cta-heading" className="pb-16 sm:pb-24">
-      <div className="page-container flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 id="cta-heading" className="text-2xl font-semibold tracking-tight text-ink">
-            Got a trip or a flat to split?
-          </h2>
-          <p className="mt-1 text-stone-500">Make an account, start a group and add your first expense.</p>
+      <div className="page-container">
+        <div className="flex flex-col items-start gap-6 rounded-panel bg-surface p-8 shadow-raised sm:flex-row sm:items-center sm:justify-between sm:p-12">
+          <div>
+            <h2 id="cta-heading" className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+              Got a trip or a flat to split?
+            </h2>
+            <p className="mt-2 text-stone-500">Make an account, start a group and add your first expense.</p>
+          </div>
+          <Link to="/register" className={buttonClasses({ size: 'lg' })}>
+            Get started
+            <ArrowRight className="size-4" />
+          </Link>
         </div>
-        <Link to="/register" className={buttonClasses({ size: 'lg' })}>
-          Get started
-          <ArrowRight className="size-4" />
-        </Link>
       </div>
     </section>
   )

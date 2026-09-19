@@ -25,7 +25,8 @@ export function NavPill({
   fixed?: boolean
 }) {
   return (
-    <header className={clsx('pointer-events-none top-0 z-40 pt-4', fixed ? 'fixed inset-x-0' : 'sticky')}>
+    // Fixed, it floats over an inset hero panel, so it drops a little further to sit inside it.
+    <header className={clsx('pointer-events-none top-0 z-40', fixed ? 'fixed inset-x-0 pt-7' : 'sticky pt-4')}>
       <div className="page-container">
         <div className="pointer-events-auto relative flex h-14 items-center justify-between gap-2 rounded-full bg-ink/92 py-2 pr-2 pl-5 text-white shadow-float ring-1 ring-white/10 backdrop-blur-xl backdrop-saturate-150">
           <Link to="/" className="shrink-0 rounded-full" aria-label="SettleUp home">

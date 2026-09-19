@@ -141,3 +141,34 @@ test('on phones the section links fold into a menu', async ({ page, isMobile }) 
   await page.getByRole('heading', { name: 'Built around getting the money right' }).click()
   await expect(menu).toBeHidden()
 })
+
+test('the hero has small info cards that describe the product card beside it', async ({ page, isMobile }) => {
+  await page.goto('/')
+  const cards = page.getByRole('list', { name: 'At a glance' }).getByRole('listitem')
+  await expect(cards).toHaveCount(3)
+  await expect(cards.nth(0)).toContainText('2 payments settle this trip')
+  await expect(cards.nth(0)).toContainText('Meera pays Aarav, Kabir pays Aarav')
+  await expect(cards.nth(1)).toContainText('33.34 + 33.33 + 33.33')
+  await expect(cards.nth(2)).toContainText('Balances add up to ₹0.00')
+
+  // Floating or stacked, a card must never sit on top of the numbers it's describing.
+  const figures = ['gets back ₹2,450.00', 'Meera Iyer', 'Kabir Rao'].map((text) => page.getByText(text).first())
+  for (const figure of figures) {
+    const f = (await figure.boundingBox())!
+    for (let i = 0; i < 3; i++) {
+      const c = (await cards.nth(i).boundingBox())!
+      const overlaps = f.x < c.x + c.width && c.x < f.x + f.width && f.y < c.y + c.height && c.y < f.y + f.height
+      expect(overlaps, `card ${i + 1} covers "${await figure.textContent()}"${isMobile ? ' on a phone' : ''}`).toBe(false)
+    }
+  }
+})
+
+test('the hero keeps one strong action, in the colour that reads on ink', async ({ page }) => {
+  await page.goto('/')
+  const hero = page.getByRole('region', { name: /Split shared costs/ })
+  const getStarted = hero.getByRole('link', { name: 'Get started' })
+  // Apricot (243, 159, 90): plum would all but disappear on the dark hero.
+  await expect(getStarted).toHaveCSS('background-color', 'rgb(243, 159, 90)')
+  await getStarted.click()
+  await expect(page).toHaveURL('/register')
+})
