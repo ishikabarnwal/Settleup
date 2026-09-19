@@ -26,13 +26,25 @@ const sizes: Record<ButtonSize, string> = {
 export function buttonClasses({
   variant = 'primary',
   size = 'md',
+  pill = false,
   className,
-}: { variant?: ButtonVariant; size?: ButtonSize; className?: string } = {}) {
+}: { variant?: ButtonVariant; size?: ButtonSize; pill?: boolean; className?: string } = {}) {
   return clsx(
-    'inline-flex shrink-0 items-center justify-center rounded-control font-medium whitespace-nowrap transition',
+    'inline-flex shrink-0 items-center justify-center font-medium whitespace-nowrap transition',
+    // Inside the pill-shaped nav, buttons follow its shape; everywhere else they're controls.
+    pill ? 'rounded-full' : 'rounded-control',
     'disabled:cursor-not-allowed disabled:opacity-60',
     variants[variant],
     sizes[size],
+    className,
+  )
+}
+
+/** A link inside the floating nav: quiet text on ink, pill shaped like the nav itself. */
+export function navItemClasses(className?: string) {
+  return clsx(
+    'inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm text-white/75 transition hover:bg-white/10 hover:text-white',
+    'aria-[current=page]:bg-white/10 aria-[current=page]:text-white',
     className,
   )
 }

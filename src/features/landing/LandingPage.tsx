@@ -3,7 +3,8 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Logo } from '../../components/Logo'
 import { ProductPreview } from '../../components/ProductPreview'
-import { buttonClasses } from '../../components/ui/buttonStyles'
+import { NavPill } from '../../components/NavPill'
+import { buttonClasses, navItemClasses } from '../../components/ui/buttonStyles'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
 
 const FRONTEND_REPO = 'https://github.com/ishikabarnwal/settleup-frontend'
@@ -40,44 +41,54 @@ const sectionLinks = [
 
 function LandingHeader() {
   return (
-    <header className="sticky top-0 z-30 bg-ink text-white shadow-sm shadow-ink/20">
-      <div className="page-container flex h-16 items-center justify-between gap-4">
-        <Link to="/" className="rounded-lg" aria-label="SettleUp home">
-          <Logo />
-        </Link>
-
-        <nav aria-label="Sections" className="hidden items-center gap-1 md:flex">
+    <NavPill
+      fixed
+      center={
+        <nav aria-label="Sections" className="flex items-center gap-1">
           {sectionLinks.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="rounded-lg px-3 py-2 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
-            >
+            <a key={link.href} href={link.href} className={navItemClasses()}>
               {link.label}
             </a>
           ))}
         </nav>
-
-        <div className="flex items-center gap-2">
-          <Link
-            to="/login"
-            className="inline-flex h-9 items-center rounded-lg px-3 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
-          >
-            Log in
-          </Link>
-          <Link to="/register" className={buttonClasses({ size: 'sm' })}>
+      }
+      right={
+        <>
+          {/* Hidden on phones, where it's in the menu instead. A wrapper does the hiding
+              so it can't fight the link's own display class. */}
+          <div className="hidden sm:block">
+            <Link to="/login" className={navItemClasses()}>
+              Log in
+            </Link>
+          </div>
+          <Link to="/register" className={buttonClasses({ variant: 'accent', size: 'md', pill: true })}>
             Sign up
           </Link>
-        </div>
-      </div>
-    </header>
+        </>
+      }
+      menu={{
+        label: 'Menu',
+        content: (close) => (
+          <nav aria-label="Menu" className="flex flex-col">
+            {sectionLinks.map((link) => (
+              <a key={link.href} href={link.href} onClick={close} className="rounded-control px-4 py-3 text-sm text-white/85 hover:bg-white/10">
+                {link.label}
+              </a>
+            ))}
+            <Link to="/login" onClick={close} className="rounded-control px-4 py-3 text-sm text-white/85 hover:bg-white/10">
+              Log in
+            </Link>
+          </nav>
+        ),
+      }}
+    />
   )
 }
 
 function Hero() {
   return (
     <section aria-labelledby="hero-heading" className="relative overflow-hidden bg-hero-glow text-white">
-      <div className="page-container relative grid items-center gap-12 py-16 sm:py-24 lg:grid-cols-[minmax(0,1fr)_24rem] lg:py-32">
+      <div className="page-container relative grid items-center gap-12 pt-32 pb-16 sm:pt-36 sm:pb-24 lg:grid-cols-[minmax(0,1fr)_24rem] lg:pt-44 lg:pb-32">
         <div className="max-w-2xl">
           <p className="text-sm font-medium tracking-wide text-blush uppercase">Shared expenses, sorted</p>
           <h1 id="hero-heading" className="mt-3 text-4xl leading-tight font-semibold tracking-tight sm:text-5xl lg:text-6xl">

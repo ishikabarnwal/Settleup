@@ -1,8 +1,9 @@
-import { LogOut } from 'lucide-react'
+import { LayoutGrid, LogOut } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { Link, Outlet, useNavigate } from 'react-router'
+import { NavLink, Outlet, useNavigate } from 'react-router'
 import { useCurrentUser, useAuth } from '../lib/auth'
-import { Logo } from './Logo'
+import { NavPill } from './NavPill'
+import { navItemClasses } from './ui/buttonStyles'
 import { Avatar } from './ui/Avatar'
 
 /** The signed-in frame. Renders its route's page, or `children` when used directly (the dashboard at "/"). */
@@ -19,19 +20,18 @@ export function AppShell({ children }: { children?: ReactNode }) {
       >
         Skip to content
       </a>
-      <header className="sticky top-0 z-30 bg-ink text-white shadow-sm shadow-ink/20">
-        <div className="page-container flex h-16 items-center justify-between">
-          <Link to="/" className="rounded-control" aria-label="SettleUp home">
-            <Logo />
-          </Link>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex items-center gap-3">
+      <NavPill
+        center={
+          <NavLink to="/" end className={navItemClasses()}>
+            <LayoutGrid className="size-4" />
+            Your groups
+          </NavLink>
+        }
+        right={
+          <>
+            <div className="flex items-center gap-3 pr-1 sm:pr-2">
               <Avatar id={user.id} name={user.name} size="sm" />
-              <div className="hidden text-right leading-tight sm:block">
-                <p className="text-sm font-medium">{user.name}</p>
-                <p className="text-xs text-white/60">{user.email}</p>
-              </div>
+              <span className="hidden max-w-40 truncate text-sm font-medium lg:inline">{user.name}</span>
             </div>
             <button
               type="button"
@@ -39,17 +39,17 @@ export function AppShell({ children }: { children?: ReactNode }) {
                 signOut()
                 navigate('/', { replace: true })
               }}
-              className="inline-flex h-10 items-center gap-2 rounded-control px-3 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
+              className={navItemClasses('px-3 sm:px-4')}
             >
               <LogOut className="size-4" />
               <span className="hidden sm:inline">Sign out</span>
               <span className="sr-only sm:hidden">Sign out</span>
             </button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
-      <main id="main" tabIndex={-1} className="page-container flex-1 py-8 outline-none sm:py-12">
+      <main id="main" tabIndex={-1} className="page-container flex-1 pt-8 pb-16 outline-none sm:pt-12">
         {children ?? <Outlet />}
       </main>
     </div>
