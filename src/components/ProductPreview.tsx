@@ -1,16 +1,6 @@
 import clsx from 'clsx'
 import { Avatar } from './ui/Avatar'
 
-/** Soft blurred blobs of the palette behind the gradient panels. Decorative only. */
-export function Glow() {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0">
-      <div className="absolute -top-24 -right-24 size-80 rounded-full bg-apricot/25 blur-3xl" />
-      <div className="absolute -bottom-32 -left-20 size-96 rounded-full bg-plum/60 blur-3xl" />
-    </div>
-  )
-}
-
 /** A static sketch of the product, so the page shows what the app does rather than stock art. */
 export function ProductPreview({ className }: { className?: string }) {
   const rows = [

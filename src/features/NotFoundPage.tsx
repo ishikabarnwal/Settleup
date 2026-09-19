@@ -11,7 +11,7 @@ export function NotFoundPage() {
       icon={<Compass className="size-6" />}
       title="There's nothing here"
       action={
-        <Link to="/" className="font-medium text-rose hover:underline">
+        <Link to="/" className="font-medium text-plum underline-offset-4 hover:underline">
           Back to your groups
         </Link>
       }

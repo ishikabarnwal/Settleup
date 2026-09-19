@@ -31,11 +31,11 @@ export function SettleUpPanel({
   return (
     <div className="space-y-8">
       <section aria-labelledby="suggested-heading">
-        <div className="mb-3">
+        <div className="mb-4">
           <h2 id="suggested-heading" className="font-semibold text-ink">
             Suggested payments
           </h2>
-          <p className="text-sm text-stone-500">The fewest payments that would square everyone up.</p>
+          <p className="mt-1 text-sm text-stone-500">The fewest payments that would square everyone up.</p>
         </div>
 
         {suggested.length === 0 ? (
@@ -43,11 +43,11 @@ export function SettleUpPanel({
             Nobody owes anybody in this group right now.
           </EmptyState>
         ) : (
-          <ul className="space-y-2.5" aria-label="Suggested payments">
+          <ul className="space-y-3" aria-label="Suggested payments">
             {suggested.map((payment) => (
               <li
                 key={`${payment.from.id}-${payment.to.id}`}
-                className="flex flex-col gap-3 rounded-xl border border-stone-200 bg-white px-4 py-3 sm:flex-row sm:items-center"
+                className="flex flex-col gap-4 rounded-card bg-surface px-6 py-4 shadow-card sm:flex-row sm:items-center"
               >
                 <PaymentPeople from={payment.from} to={payment.to} amount={toPaise(payment.amount)} />
                 <Button
@@ -64,7 +64,7 @@ export function SettleUpPanel({
       </section>
 
       <section aria-labelledby="history-heading">
-        <h2 id="history-heading" className="mb-3 font-semibold text-ink">
+        <h2 id="history-heading" className="mb-4 font-semibold text-ink">
           Payment history
         </h2>
 
@@ -73,9 +73,9 @@ export function SettleUpPanel({
             Payments you record between members show up here.
           </EmptyState>
         ) : (
-          <ul className="divide-y divide-stone-100 rounded-2xl border border-stone-200 bg-white" aria-label="Payment history">
+          <ul className="divide-y divide-stone-100 rounded-card bg-surface shadow-card" aria-label="Payment history">
             {history.map((payment) => (
-              <li key={payment.id} className="flex items-center gap-2 px-4 py-3 sm:gap-4">
+              <li key={payment.id} className="flex items-center gap-2 px-6 py-4 sm:gap-4">
                 <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
                   <PaymentPeople from={payment.paidBy} to={payment.paidTo} amount={toPaise(payment.amount)} />
                   <div className="text-xs text-stone-500 sm:text-right">
@@ -141,7 +141,10 @@ function DeleteSettlementDialog({
       {settlement && (
         <p>
           <span className="font-medium text-stone-900">
-            {name(settlement.paidBy)} → {name(settlement.paidTo)}, {formatPaise(toPaise(settlement.amount))}
+            {name(settlement.paidBy)}
+            <ArrowRight aria-hidden className="mx-1 inline size-3.5 align-[-2px] text-stone-400" />
+            <span className="sr-only"> to </span>
+            {name(settlement.paidTo)}, {formatPaise(toPaise(settlement.amount))}
           </span>{' '}
           will be taken off the record, so whatever it paid off is owed again. This can't be undone.
         </p>
@@ -155,14 +158,14 @@ function PaymentPeople({ from, to, amount }: { from: User; to: User; amount: num
   const name = (user: User) => (user.id === me.id ? 'You' : user.name)
 
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-2.5">
+    <div className="flex min-w-0 flex-1 items-center gap-3">
       <div className="flex -space-x-1.5">
-        <Avatar id={from.id} name={from.name} size="sm" className="ring-2 ring-white" />
-        <Avatar id={to.id} name={to.name} size="sm" className="ring-2 ring-white" />
+        <Avatar id={from.id} name={from.name} size="sm" className="ring-2 ring-surface" />
+        <Avatar id={to.id} name={to.name} size="sm" className="ring-2 ring-surface" />
       </div>
       <p className="min-w-0 flex-1 text-sm">
         <span className="font-medium">{name(from)}</span>
-        <ArrowRight aria-hidden className="mx-1.5 inline size-3.5 text-stone-400" />
+        <ArrowRight aria-hidden className="mx-2 inline size-3.5 text-stone-400" />
         <span className="sr-only"> pays </span>
         <span className="font-medium">{name(to)}</span>
       </p>

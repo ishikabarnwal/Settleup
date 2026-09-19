@@ -40,7 +40,7 @@ createRoot(document.getElementById('root')!).render(
               position="top-center"
               toastOptions={{
                 classNames: {
-                  toast: 'rounded-xl border border-stone-200 bg-white text-stone-900 shadow-lg',
+                  toast: 'rounded-card border-0 bg-surface text-stone-900 shadow-raised ring-1 ring-stone-200',
                   description: 'text-stone-500',
                   error: 'border-rose/30',
                 },

@@ -15,9 +15,9 @@ export function BalancesPanel({ balances }: { balances: MemberBalance[] }) {
   const allSquare = balances.every((b) => toPaise(b.net) === 0)
 
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white">
+    <div className="rounded-card bg-surface shadow-card">
       {allSquare && (
-        <p className="border-b border-stone-100 px-5 py-3 text-sm text-stone-600">
+        <p className="border-b border-stone-100 px-6 py-4 text-sm text-stone-600">
           Everyone is settled up. Nobody owes anything right now.
         </p>
       )}
@@ -27,7 +27,7 @@ export function BalancesPanel({ balances }: { balances: MemberBalance[] }) {
           const width = `${(Math.abs(net) / largest) * 50}%`
 
           return (
-            <li key={balance.user.id} className="px-5 py-4">
+            <li key={balance.user.id} className="px-6 py-4">
               <div className="flex items-center gap-3">
                 <Avatar id={balance.user.id} name={balance.user.name} />
                 <div className="min-w-0 flex-1">
@@ -42,7 +42,7 @@ export function BalancesPanel({ balances }: { balances: MemberBalance[] }) {
                 <NetAmount paise={net} className="text-right text-sm" />
               </div>
 
-              <div aria-hidden className="relative mt-3 h-1.5 rounded-full bg-stone-100">
+              <div aria-hidden className="relative mt-4 h-2 rounded-full bg-sunken">
                 <div className="absolute inset-y-0 left-1/2 w-px bg-stone-300" />
                 {net !== 0 && (
                   <div

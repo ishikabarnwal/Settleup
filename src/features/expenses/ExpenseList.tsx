@@ -44,7 +44,7 @@ export function ExpenseList({ groupId, expenses, onAdd }: { groupId: number; exp
   // The backend already returns these newest first.
   return (
     <>
-      <ul className="space-y-2.5" aria-label="Expenses">
+      <ul className="space-y-3" aria-label="Expenses">
         {expenses.map((expense) => (
           <ExpenseItem key={expense.id} expense={expense} onDelete={() => setDeleting(expense)} />
         ))}
@@ -116,25 +116,29 @@ function ExpenseItem({ expense, onDelete }: { expense: Expense; onDelete: () => 
 
   return (
     <li>
-      <details className="group rounded-xl border border-stone-200 bg-white transition open:shadow-sm">
-        <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 sm:gap-4 [&::-webkit-details-marker]:hidden">
+      <details className="group rounded-card bg-surface shadow-card transition open:shadow-raised">
+        <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-4 sm:gap-4 sm:px-6 [&::-webkit-details-marker]:hidden">
           <time
             dateTime={expense.createdAt}
             title={formatDateTime(expense.createdAt)}
-            className="flex w-11 shrink-0 flex-col items-center rounded-lg bg-stone-100 py-1 leading-tight"
+            className="hidden w-12 shrink-0 flex-col items-center rounded-control bg-sunken py-1 leading-tight sm:flex"
           >
             <span className="text-[11px] font-medium text-stone-500 uppercase">{monthFormat.format(date)}</span>
             <span className="text-base font-semibold text-ink">{dayFormat.format(date)}</span>
           </time>
 
           <div className="min-w-0 flex-1">
-            <p className="truncate font-medium text-stone-900">{expense.description}</p>
+            <p className="line-clamp-2 font-medium break-words text-stone-900">{expense.description}</p>
             <p className="truncate text-xs text-stone-500">
+              {/* On phones the date tile is hidden to leave room for the name, so the date goes here. */}
+              <span className="sm:hidden">
+                {dayFormat.format(date)} {monthFormat.format(date)} ·{' '}
+              </span>
               {paidByMe ? 'You' : expense.paidBy.name} paid · {splitLabel[expense.splitType]}
             </p>
           </div>
 
-          <div className="text-right">
+          <div className="shrink-0 text-right">
             <p className="font-semibold text-ink tabular-nums">{formatPaise(total)}</p>
             <p className={clsx('text-xs tabular-nums', effect ? effect.tone : 'text-stone-400')}>
               {effect ? `${effect.text} ${formatPaise(effect.amount)}` : 'not involved'}
@@ -144,11 +148,11 @@ function ExpenseItem({ expense, onDelete }: { expense: Expense; onDelete: () => 
           <ChevronDown aria-hidden className="size-4 shrink-0 text-stone-400 transition group-open:rotate-180" />
         </summary>
 
-        <div className="border-t border-stone-100 px-4 py-3">
-          <p className="mb-2 text-xs font-medium tracking-wide text-stone-500 uppercase">Shares</p>
+        <div className="border-t border-stone-100 px-4 py-4 sm:px-6">
+          <p className="mb-3 text-xs font-medium tracking-wide text-stone-500 uppercase">Shares</p>
           <ul className="space-y-2">
             {expense.shares.map((share) => (
-              <li key={share.user.id} className="flex items-center gap-2.5 text-sm">
+              <li key={share.user.id} className="flex items-center gap-3 text-sm">
                 <Avatar id={share.user.id} name={share.user.name} size="sm" />
                 <span className="flex-1 truncate">
                   {share.user.name}
@@ -158,7 +162,7 @@ function ExpenseItem({ expense, onDelete }: { expense: Expense; onDelete: () => 
               </li>
             ))}
           </ul>
-          <div className="mt-3 flex justify-end border-t border-stone-100 pt-3">
+          <div className="mt-4 flex justify-end border-t border-stone-100 pt-4">
             <Button size="sm" variant="danger" icon={<Trash2 className="size-4" />} onClick={onDelete}>
               Delete expense
             </Button>

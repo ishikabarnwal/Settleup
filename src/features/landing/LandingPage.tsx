@@ -2,7 +2,7 @@ import { ArrowRight, Divide, HandCoins, Scale, Users } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Logo } from '../../components/Logo'
-import { Glow, ProductPreview } from '../../components/ProductPreview'
+import { ProductPreview } from '../../components/ProductPreview'
 import { buttonClasses } from '../../components/ui/buttonStyles'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
 
@@ -17,7 +17,7 @@ export function LandingPage() {
     <div className="flex min-h-dvh flex-col">
       <a
         href="#main"
-        className="sr-only z-50 rounded-lg bg-white px-3 py-2 text-sm font-medium text-ink shadow focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
+        className="sr-only z-50 rounded-control bg-surface px-4 py-2 text-sm font-medium text-plum shadow-raised focus:not-sr-only focus:fixed focus:top-4 focus:left-4"
       >
         Skip to content
       </a>
@@ -41,7 +41,7 @@ const sectionLinks = [
 function LandingHeader() {
   return (
     <header className="sticky top-0 z-30 bg-ink text-white shadow-sm shadow-ink/20">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+      <div className="page-container flex h-16 items-center justify-between gap-4">
         <Link to="/" className="rounded-lg" aria-label="SettleUp home">
           <Logo />
         </Link>
@@ -70,17 +70,14 @@ function LandingHeader() {
           </Link>
         </div>
       </div>
-      {/* The same thin gradient line that sits under the app's own nav. */}
-      <div aria-hidden className="h-0.5 bg-brand-sweep" />
     </header>
   )
 }
 
 function Hero() {
   return (
-    <section aria-labelledby="hero-heading" className="relative overflow-hidden bg-brand-sweep text-white">
-      <Glow />
-      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[minmax(0,1fr)_24rem] lg:py-28">
+    <section aria-labelledby="hero-heading" className="relative overflow-hidden bg-hero-glow text-white">
+      <div className="page-container relative grid items-center gap-12 py-16 sm:py-24 lg:grid-cols-[minmax(0,1fr)_24rem] lg:py-32">
         <div className="max-w-2xl">
           <p className="text-sm font-medium tracking-wide text-blush uppercase">Shared expenses, sorted</p>
           <h1 id="hero-heading" className="mt-3 text-4xl leading-tight font-semibold tracking-tight sm:text-5xl lg:text-6xl">
@@ -137,16 +134,16 @@ const features: { icon: ReactNode; title: string; text: string }[] = [
 
 function Features() {
   return (
-    <section id="features" aria-labelledby="features-heading" className="scroll-mt-20 py-16 sm:py-20">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+    <section id="features" aria-labelledby="features-heading" className="scroll-mt-24 py-16 sm:py-24">
+      <div className="page-container">
         <SectionHeading id="features-heading" eyebrow="What it does" title="Everything a shared tab needs, nothing it doesn't" />
 
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((feature) => (
-            <li key={feature.title} className="rounded-2xl border border-stone-200 bg-white p-5 shadow-xs">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-blush/45 text-wine">{feature.icon}</div>
+            <li key={feature.title} className="rounded-card bg-surface p-6 shadow-card">
+              <div className="flex size-10 items-center justify-center rounded-control bg-plum/8 text-plum">{feature.icon}</div>
               <h3 className="mt-4 font-semibold text-ink">{feature.title}</h3>
-              <p className="mt-1.5 text-sm text-stone-500">{feature.text}</p>
+              <p className="mt-2 text-sm text-stone-500">{feature.text}</p>
             </li>
           ))}
         </ul>
@@ -177,8 +174,8 @@ const differences: { title: string; text: ReactNode }[] = [
 
 function WhyDifferent() {
   return (
-    <section id="why" aria-labelledby="why-heading" className="scroll-mt-20 border-y border-stone-200 bg-white py-16 sm:py-20">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-16">
+    <section id="why" aria-labelledby="why-heading" className="scroll-mt-24 py-16 sm:py-24">
+      <div className="page-container grid gap-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-16">
         <div>
           <SectionHeading id="why-heading" eyebrow="Why SettleUp" title="Built around getting the money right" />
           <p className="mt-4 text-stone-600">
@@ -187,11 +184,11 @@ function WhyDifferent() {
           </p>
           <p className="mt-4 text-sm text-stone-500">
             It's open source. Read the{' '}
-            <a href={FRONTEND_REPO} className="font-medium text-rose hover:underline">
+            <a href={FRONTEND_REPO} className="font-medium text-plum underline-offset-4 hover:underline">
               web app
             </a>{' '}
             and the{' '}
-            <a href={BACKEND_REPO} className="font-medium text-rose hover:underline">
+            <a href={BACKEND_REPO} className="font-medium text-plum underline-offset-4 hover:underline">
               API
             </a>{' '}
             on GitHub.
@@ -200,9 +197,9 @@ function WhyDifferent() {
 
         <dl className="grid gap-6 sm:grid-cols-2">
           {differences.map((item) => (
-            <div key={item.title} className="border-l-2 border-rose/60 pl-4">
+            <div key={item.title} className="rounded-card bg-surface p-6 shadow-card">
               <dt className="font-semibold text-ink">{item.title}</dt>
-              <dd className="mt-1.5 text-sm text-stone-600">{item.text}</dd>
+              <dd className="mt-2 text-sm text-stone-600">{item.text}</dd>
             </div>
           ))}
         </dl>
@@ -213,8 +210,8 @@ function WhyDifferent() {
 
 function ClosingCta() {
   return (
-    <section aria-labelledby="cta-heading" className="py-16 sm:py-20">
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <section aria-labelledby="cta-heading" className="pb-16 sm:pb-24">
+      <div className="page-container flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 id="cta-heading" className="text-2xl font-semibold tracking-tight text-ink">
             Got a trip or a flat to split?
@@ -233,7 +230,7 @@ function ClosingCta() {
 function SectionHeading({ id, eyebrow, title }: { id: string; eyebrow: string; title: string }) {
   return (
     <div className="max-w-2xl">
-      <p className="text-sm font-semibold tracking-wide text-rose uppercase">{eyebrow}</p>
+      <p className="text-sm font-semibold tracking-wide text-plum uppercase">{eyebrow}</p>
       <h2 id={id} className="mt-2 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
         {title}
       </h2>
@@ -243,31 +240,31 @@ function SectionHeading({ id, eyebrow, title }: { id: string; eyebrow: string; t
 
 function LandingFooter() {
   return (
-    <footer className="border-t border-stone-200 bg-white">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <footer className="bg-ink text-white">
+      <div className="page-container flex flex-col gap-8 py-12 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <Logo tone="dark" />
-          <p className="mt-2 text-sm text-stone-500">Split shared expenses and settle up.</p>
+          <Logo />
+          <p className="mt-3 max-w-xs text-sm text-white/65">Split shared expenses and settle up in fewer payments.</p>
         </div>
-        <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-stone-600">
+        <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/75">
           {sectionLinks.map((link) => (
-            <a key={link.href} href={link.href} className="hover:text-ink">
+            <a key={link.href} href={link.href} className="hover:text-white">
               {link.label}
             </a>
           ))}
-          <Link to="/login" className="hover:text-ink">
+          <Link to="/login" className="hover:text-white">
             Log in
           </Link>
-          <Link to="/register" className="hover:text-ink">
+          <Link to="/register" className="hover:text-white">
             Sign up
           </Link>
-          <a href={FRONTEND_REPO} className="hover:text-ink">
+          <a href={FRONTEND_REPO} className="hover:text-white">
             Source code
           </a>
         </nav>
       </div>
-      <div className="border-t border-stone-100">
-        <p className="mx-auto max-w-6xl px-4 py-4 text-xs text-stone-500 sm:px-6">© {new Date().getFullYear()} SettleUp</p>
+      <div className="border-t border-white/10">
+        <p className="page-container py-6 text-xs text-white/55">© {new Date().getFullYear()} SettleUp</p>
       </div>
     </footer>
   )

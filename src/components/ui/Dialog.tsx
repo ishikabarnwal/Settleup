@@ -43,26 +43,26 @@ export function Dialog({ open, onClose, title, description, children, size = 'md
         if (event.target === event.currentTarget) onClose()
       }}
       className={clsx(
-        'm-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-hidden rounded-t-2xl bg-white p-0 text-stone-900 shadow-2xl',
+        'm-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-hidden rounded-t-panel bg-surface p-0 text-stone-900 shadow-float',
         'backdrop:bg-ink/55 backdrop:backdrop-blur-[2px]',
-        'sm:m-auto sm:rounded-2xl',
+        'sm:m-auto sm:rounded-panel',
         size === 'md' ? 'sm:max-w-md' : 'sm:max-w-2xl',
         'open:animate-pop-in',
       )}
     >
       {open && (
         <div className="flex max-h-[92dvh] flex-col">
-          <header className="flex shrink-0 items-start justify-between gap-4 border-b border-stone-200 px-5 py-4">
+          <header className="flex shrink-0 items-start justify-between gap-4 px-6 pt-6 pb-4">
             <div>
               <h2 id={titleId} className="text-lg font-semibold text-ink">
                 {title}
               </h2>
-              {description && <p className="mt-0.5 text-sm text-stone-500">{description}</p>}
+              {description && <p className="mt-1 text-sm text-stone-500">{description}</p>}
             </div>
             <button
               type="button"
               onClick={onClose}
-              className="-mr-1 rounded-lg p-1.5 text-stone-500 transition hover:bg-stone-100 hover:text-stone-800"
+              className="-mt-1 -mr-2 rounded-control p-2 text-stone-500 transition hover:bg-stone-100 hover:text-stone-800"
               aria-label="Close"
             >
               <X className="size-5" />
@@ -76,12 +76,12 @@ export function Dialog({ open, onClose, title, description, children, size = 'md
 }
 
 export function DialogBody({ children }: { children: ReactNode }) {
-  return <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">{children}</div>
+  return <div className="min-h-0 flex-1 overflow-y-auto px-6 pt-2 pb-6">{children}</div>
 }
 
 export function DialogFooter({ children }: { children: ReactNode }) {
   return (
-    <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-stone-200 bg-stone-50 px-5 py-3.5 sm:flex-row sm:justify-end">
+    <footer className="flex shrink-0 flex-col-reverse gap-2 bg-sunken/60 px-6 py-4 sm:flex-row sm:justify-end">
       {children}
     </footer>
   )

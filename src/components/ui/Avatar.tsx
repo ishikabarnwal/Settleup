@@ -45,10 +45,10 @@ export function AvatarStack({ people, max = 4 }: { people: { id: number; name: s
   return (
     <div className="flex -space-x-1.5">
       {shown.map((person) => (
-        <Avatar key={person.id} id={person.id} name={person.name} size="sm" className="ring-2 ring-white" />
+        <Avatar key={person.id} id={person.id} name={person.name} size="sm" className="ring-2 ring-canvas" />
       ))}
       {extra > 0 && (
-        <span className="inline-flex size-7 items-center justify-center rounded-full bg-stone-200 text-[11px] font-semibold text-stone-700 ring-2 ring-white">
+        <span className="inline-flex size-7 items-center justify-center rounded-full bg-sunken text-[11px] font-semibold text-stone-700 ring-2 ring-canvas">
           +{extra}
         </span>
       )}

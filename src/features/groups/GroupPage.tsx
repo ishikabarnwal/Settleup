@@ -88,7 +88,7 @@ function GroupView({ groupId }: { groupId: number }) {
 
 function GroupSkeleton() {
   return (
-    <div className="animate-pulse space-y-6" aria-busy aria-label="Loading group">
+    <div className="animate-pulse space-y-8" aria-busy aria-label="Loading group">
       <div className="h-4 w-24 rounded bg-stone-200" />
       <div className="space-y-3">
         <div className="h-8 w-56 rounded bg-stone-200" />
@@ -99,13 +99,13 @@ function GroupSkeleton() {
           ))}
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="space-y-2.5">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="space-y-3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-16 rounded-xl border border-stone-200 bg-white" />
+            <div key={i} className="h-20 rounded-card bg-surface shadow-card" />
           ))}
         </div>
-        <div className="h-64 rounded-2xl border border-stone-200 bg-white" />
+        <div className="h-64 rounded-card bg-surface shadow-card" />
       </div>
     </div>
   )
@@ -113,7 +113,7 @@ function GroupSkeleton() {
 
 function BackLink() {
   return (
-    <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-stone-500 transition hover:text-ink">
+    <Link to="/" className="inline-flex items-center gap-2 text-sm text-stone-500 transition hover:text-plum">
       <ArrowLeft className="size-4" />
       All groups
     </Link>
@@ -139,11 +139,11 @@ function GroupContent({ group }: { group: GroupDetail }) {
     <div className="space-y-6">
       <BackLink />
 
-      <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-tight break-words text-ink sm:text-3xl">{group.name}</h1>
-          {group.description && <p className="mt-1 text-stone-500">{group.description}</p>}
-          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+          {group.description && <p className="mt-2 text-stone-500">{group.description}</p>}
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
             <AvatarStack people={group.members} />
             <p className="text-sm">
               {myNet === undefined ? (
@@ -167,12 +167,12 @@ function GroupContent({ group }: { group: GroupDetail }) {
 
       {/* grid-cols-1 matters on phones: an implicit column sizes itself to the
           widest row, which pushed the page wider than the screen. */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="min-w-0">
           <div
             role="tablist"
             aria-label="Group sections"
-            className="mb-5 flex gap-1 border-b border-stone-200"
+            className="mb-6 inline-flex max-w-full gap-1 rounded-control bg-sunken p-1"
             onKeyDown={(event) => {
               const step = event.key === 'ArrowRight' ? 1 : event.key === 'ArrowLeft' ? -1 : 0
               if (!step) return
@@ -197,8 +197,8 @@ function GroupContent({ group }: { group: GroupDetail }) {
                 tabIndex={tab === t.id ? 0 : -1}
                 onClick={() => selectTab(t.id)}
                 className={clsx(
-                  '-mb-px border-b-2 px-3 py-2.5 text-sm font-medium transition',
-                  tab === t.id ? 'border-rose text-ink' : 'border-transparent text-stone-500 hover:text-stone-800',
+                  'rounded-[0.5rem] px-4 py-2 text-sm font-medium whitespace-nowrap transition',
+                  tab === t.id ? 'bg-surface text-plum shadow-card' : 'text-stone-600 hover:text-stone-900',
                 )}
               >
                 {t.label}
@@ -217,7 +217,7 @@ function GroupContent({ group }: { group: GroupDetail }) {
           </div>
         </div>
 
-        <aside className="space-y-3">
+        <aside className="space-y-4">
           <MembersCard groupId={group.id} groupName={group.name} members={group.members} />
           {group.createdBy === me.id && (
             <Button

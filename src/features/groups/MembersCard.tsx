@@ -50,17 +50,17 @@ export function MembersCard({
   }
 
   return (
-    <section aria-labelledby="members-heading" className="rounded-2xl border border-stone-200 bg-white">
-      <header className="flex items-center justify-between border-b border-stone-100 px-5 py-4">
+    <section aria-labelledby="members-heading" className="rounded-card bg-surface shadow-card">
+      <header className="flex items-center justify-between px-6 pt-6 pb-4">
         <h2 id="members-heading" className="font-semibold text-ink">
           Members
         </h2>
-        <span className="text-sm text-stone-500">{members.length}</span>
+        <span className="rounded-full bg-sunken px-2 py-1 text-xs font-medium text-stone-600">{members.length}</span>
       </header>
 
-      <ul className="divide-y divide-stone-100">
+      <ul className="divide-y divide-stone-100 px-2">
         {members.map((member) => (
-          <li key={member.id} className="flex items-center gap-3 px-5 py-3">
+          <li key={member.id} className="flex items-center gap-3 px-4 py-3">
             <Avatar id={member.id} name={member.name} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-stone-900">
@@ -70,7 +70,7 @@ export function MembersCard({
               <p className="truncate text-xs text-stone-500">{member.email}</p>
             </div>
             {member.role === 'OWNER' && (
-              <span className="rounded-full bg-blush/50 px-2 py-0.5 text-xs font-medium text-wine">Owner</span>
+              <span className="rounded-full bg-plum/8 px-2 py-1 text-xs font-medium text-plum">Owner</span>
             )}
             {iAmOwner && member.role !== 'OWNER' && (
               <Button
@@ -87,11 +87,11 @@ export function MembersCard({
         ))}
       </ul>
 
-      <form noValidate onSubmit={submit} className="border-t border-stone-100 px-5 py-4">
+      <form noValidate onSubmit={submit} className="m-2 mt-2 rounded-[1rem] bg-sunken/60 p-4">
         <label htmlFor="add-member-email" className="text-sm font-medium text-stone-700">
           Add someone
         </label>
-        <p className="mb-2 text-xs text-stone-500">They need a SettleUp account already.</p>
+        <p className="mt-1 mb-3 text-xs text-stone-500">They need a SettleUp account already.</p>
         <div className="flex gap-2">
           <Input
             id="add-member-email"

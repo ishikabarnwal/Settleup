@@ -152,7 +152,7 @@ function ExpenseFormBody({ groupId, members, onDone }: { groupId: number; member
           <legend className="mb-1.5 text-sm font-medium text-stone-700">Split</legend>
           <Segmented label="How to split" options={splitOptions} value={form.splitType} onChange={(splitType) => update({ splitType })} />
 
-          <ul className="divide-y divide-stone-100 rounded-xl border border-stone-200">
+          <ul className="divide-y divide-stone-100 rounded-control bg-canvas/50 ring-1 ring-stone-200 ring-inset">
             {members.map((member) => (
               <SplitRow
                 key={member.id}

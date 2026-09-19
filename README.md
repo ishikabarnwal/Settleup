@@ -93,15 +93,22 @@ e2e                Playwright tests
 
 ## Design
 
-The palette lives in `src/index.css` as Tailwind theme tokens, so components use classes like `bg-ink` or `text-rose` rather than raw hex values:
+Everything visual comes from tokens in `src/index.css`, so components use classes like `bg-surface`, `text-plum`, `rounded-card` or `shadow-card` rather than raw values.
 
-| Token | Colour | Used for |
+**Colour roles**
+
+| Token | Colour | Role |
 |---|---|---|
-| `ink` | `#1D1A39` | Navigation bar, headings |
-| `plum` | `#451952` | Start of the button gradient, focus rings |
-| `wine` | `#662549` | Middle of the gradients |
-| `rose` | `#AE445A` | Links, errors, "owes" amounts |
-| `apricot` | `#F39F5A` | End of the hero gradient, decorative only |
-| `blush` | `#E8BCB9` | Soft highlights and tints |
+| `plum` | `#451952` | Primary. The main action on light backgrounds, links, focus rings. |
+| `apricot` | `#F39F5A` | Secondary. The main action on dark backgrounds, and small highlights. Plum barely shows on ink (1.2:1); apricot does (7.9:1). |
+| `ink` | `#1D1A39` | Base for every dark area: nav, hero, footer. |
+| `canvas` / `surface` / `sunken` | tints of `#E8BCB9` | Page background, cards and inputs, tracks. There is no pure white anywhere. |
+| `rose`, green | | Money direction: rose for "owes", green for "gets back". |
 
-The full gradient is kept for the sign-in hero and a thin line under the nav; buttons use its darker end so white text stays readable. Everything else is neutral, so the palette reads as an accent. Apricot and blush are too light for text on white, so they're only used as backgrounds or decoration.
+The greys are the stone scale re-tinted towards blush, so every neutral in the app is on-palette. Muted text stays at 4.7:1 or better on every light background.
+
+**Shape and depth.** One radius per kind of thing: controls (buttons, inputs, tabs) 12px, cards 20px, panels and dialogs 28px, and pills only for the nav, avatars and small chips. Cards get soft shadows instead of outlines.
+
+**Spacing.** Paddings and gaps stay on a 4 / 8 / 12 / 16 / 24 / 32 / 48 / 64px scale, and every page shares the same width and side margins (`page-container`).
+
+**Gradients.** Only one is left: a restrained glow in the landing page hero.

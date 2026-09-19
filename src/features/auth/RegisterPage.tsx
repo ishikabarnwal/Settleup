@@ -56,7 +56,7 @@ export function RegisterPage() {
       subtitle={
         <>
           Already have one?{' '}
-          <Link to="/login" className="font-medium text-rose hover:underline">
+          <Link to="/login" className="font-medium text-plum underline-offset-4 hover:underline">
             Sign in
           </Link>
         </>

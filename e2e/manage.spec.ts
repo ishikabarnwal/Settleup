@@ -96,7 +96,7 @@ test.describe('deleting a payment', () => {
 
     await history.first().getByRole('button', { name: 'Delete payment from Riya to You' }).click()
     const dialog = page.getByRole('dialog', { name: 'Delete this payment?' })
-    await expect(dialog).toContainText('Riya → You, ₹450.00')
+    await expect(dialog).toContainText('Riya to You, ₹450.00')
 
     await dialog.getByRole('button', { name: 'Cancel' }).click()
     await expect(history).toHaveCount(1)

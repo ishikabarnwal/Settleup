@@ -9,8 +9,8 @@ import {
 } from 'react'
 
 const control =
-  'block w-full rounded-lg border bg-white px-3 text-sm text-stone-900 shadow-xs transition placeholder:text-stone-400 ' +
-  'focus:border-plum focus:ring-3 focus:ring-plum/15 focus:outline-none disabled:bg-stone-100 disabled:text-stone-500'
+  'block w-full rounded-control border bg-surface px-4 text-sm text-stone-900 shadow-xs transition placeholder:text-stone-400 ' +
+  'focus:border-plum focus:ring-4 focus:ring-plum/10 focus:outline-none disabled:bg-stone-100 disabled:text-stone-500'
 
 type FieldProps = {
   label: ReactNode
@@ -26,7 +26,7 @@ export function Field({ label, error, hint, children, className }: FieldProps) {
   const messageId = `${id}-message`
 
   return (
-    <div className={clsx('space-y-1.5', className)}>
+    <div className={clsx('space-y-2', className)}>
       <label htmlFor={id} className="block text-sm font-medium text-stone-700">
         {label}
       </label>
@@ -61,8 +61,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         control,
         'h-10',
         invalid || props['aria-invalid'] ? 'border-rose' : 'border-stone-300',
-        prefix && 'pl-8',
-        suffix && 'pr-9',
+        prefix && 'pl-9',
+        suffix && 'pr-10',
         className,
       )}
       {...props}
@@ -74,13 +74,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   return (
     <div className="relative">
       {prefix && (
-        <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-stone-500">
+        <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm text-stone-500">
           {prefix}
         </span>
       )}
       {input}
       {suffix && (
-        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-stone-500">
+        <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-sm text-stone-500">
           {suffix}
         </span>
       )}
@@ -111,7 +111,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<H
         rows={3}
         className={clsx(
           control,
-          'resize-none py-2',
+          'resize-none py-3',
           props['aria-invalid'] ? 'border-rose' : 'border-stone-300',
           className,
         )}
@@ -124,7 +124,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<H
 export function FormError({ message }: { message?: string | null }) {
   if (!message) return null
   return (
-    <div role="alert" className="rounded-lg border border-rose/30 bg-rose/5 px-3 py-2.5 text-sm text-rose">
+    <div role="alert" className="rounded-control bg-rose/8 px-4 py-3 text-sm text-rose ring-1 ring-rose/20 ring-inset">
       {message}
     </div>
   )

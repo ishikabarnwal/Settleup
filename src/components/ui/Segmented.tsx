@@ -30,7 +30,7 @@ export function Segmented<T extends string>({
   }
 
   return (
-    <div role="radiogroup" aria-label={label} onKeyDown={onKeyDown} className="grid grid-cols-3 gap-1 rounded-xl bg-stone-100 p-1">
+    <div role="radiogroup" aria-label={label} onKeyDown={onKeyDown} className="grid grid-cols-3 gap-1 rounded-control bg-sunken p-1">
       {options.map((option) => {
         const selected = option.value === value
         return (
@@ -43,8 +43,8 @@ export function Segmented<T extends string>({
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(option.value)}
             className={clsx(
-              'rounded-lg px-2 py-2 text-sm font-medium transition',
-              selected ? 'bg-white text-ink shadow-sm ring-1 ring-stone-200' : 'text-stone-600 hover:text-stone-900',
+              'rounded-[0.5rem] px-2 py-2 text-sm font-medium transition',
+              selected ? 'bg-surface text-plum shadow-card' : 'text-stone-600 hover:text-stone-900',
             )}
           >
             {option.label}
