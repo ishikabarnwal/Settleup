@@ -123,7 +123,7 @@ test('on phones the section links fold into a menu', async ({ page, isMobile }) 
   await toggle.click()
   await expect(header.getByRole('button', { name: 'Close menu' })).toHaveAttribute('aria-expanded', 'true')
   const menu = header.getByRole('navigation', { name: 'Menu' })
-  await expect(menu.getByRole('link')).toHaveText(['What it does', 'Why SettleUp', 'Log in'])
+  await expect(menu.getByRole('link')).toHaveText(['How it works', 'What it does', 'Why SettleUp', 'Log in'])
 
   // Escape closes it, and so does picking a section.
   await page.keyboard.press('Escape')
@@ -171,4 +171,52 @@ test('the hero keeps one strong action, in the colour that reads on ink', async 
   await expect(getStarted).toHaveCSS('background-color', 'rgb(243, 159, 90)')
   await getStarted.click()
   await expect(page).toHaveURL('/register')
+})
+
+test('How it works is a connected flow of four steps', async ({ page, isMobile }) => {
+  await page.goto('/')
+  const flow = page.getByRole('list', { name: 'How it works' })
+  const steps = flow.getByRole('listitem')
+  await expect(steps).toHaveCount(4)
+  await expect(steps.getByRole('heading')).toHaveText([
+    'Create a group',
+    'Add expenses',
+    'SettleUp works out balances',
+    'Settle up in fewer payments',
+  ])
+  await flow.scrollIntoViewIfNeeded()
+
+  // Each connector has to actually join a node to the next one: across on
+  // wide screens, down on phones.
+  const nodes = await Promise.all([0, 1, 2, 3].map((i) => steps.nth(i).locator('> div').first().boundingBox()))
+  const connectors = flow.locator('[data-connector] > div:visible')
+  await expect(connectors).toHaveCount(3)
+
+  for (let i = 0; i < 3; i++) {
+    const line = (await connectors.nth(i).boundingBox())!
+    const here = nodes[i]!
+    const next = nodes[i + 1]!
+    if (isMobile) {
+      expect(line.height, 'runs down').toBeGreaterThan(line.width)
+      expect(line.y).toBeGreaterThanOrEqual(here.y + here.height - 1)
+      expect(line.y + line.height).toBeLessThanOrEqual(next.y + 1)
+    } else {
+      expect(Math.abs(here.y - next.y), 'nodes sit on one line').toBeLessThan(1)
+      expect(line.x).toBeGreaterThanOrEqual(here.x + here.width - 1)
+      expect(line.x + line.width).toBeLessThanOrEqual(next.x + 1)
+    }
+  }
+})
+
+test('the nav links to How it works', async ({ page, isMobile }) => {
+  await page.goto('/')
+  const header = page.getByRole('banner')
+  if (isMobile) {
+    await header.getByRole('button', { name: 'Menu' }).click()
+    await header.getByRole('navigation', { name: 'Menu' }).getByRole('link', { name: 'How it works' }).click()
+  } else {
+    await header.getByRole('navigation', { name: 'Sections' }).getByRole('link', { name: 'How it works' }).click()
+  }
+  await expect(page).toHaveURL(/#how$/)
+  await expect(page.getByRole('heading', { name: /From the first receipt to all square/ })).toBeInViewport()
 })

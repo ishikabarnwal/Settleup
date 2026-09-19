@@ -112,3 +112,9 @@ The greys are the stone scale re-tinted towards blush, so every neutral in the a
 **Spacing.** Paddings and gaps stay on a 4 / 8 / 12 / 16 / 24 / 32 / 48 / 64px scale, and every page shares the same width and side margins (`page-container`).
 
 **Gradients.** Only one is left: a restrained glow in the landing page hero.
+
+**Navigation.** One floating nav for the whole app: a frosted ink pill inside the page margins rather than a bar across the top. On the landing page its section links fold into a menu on phones.
+
+**Landing page.** An inset ink hero with small info cards floating around a product card (each one describes that card, so the numbers are real), then a "How it works" flow: four numbered steps joined by connectors that run across on wide screens and down on phones, with one worked example carried through every step.
+
+**Motion** is small and optional: the hero cards drift and a dot travels along each connector, and both stop for anyone who has asked their system for reduced motion.

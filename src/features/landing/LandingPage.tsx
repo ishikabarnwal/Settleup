@@ -6,6 +6,7 @@ import { NavPill } from '../../components/NavPill'
 import { buttonClasses, navItemClasses } from '../../components/ui/buttonStyles'
 import { useDocumentTitle } from '../../lib/useDocumentTitle'
 import { Hero } from './Hero'
+import { HowItWorks } from './HowItWorks'
 
 const FRONTEND_REPO = 'https://github.com/ishikabarnwal/settleup-frontend'
 const BACKEND_REPO = 'https://github.com/ishikabarnwal/settleup-backend'
@@ -25,6 +26,7 @@ export function LandingPage() {
       <LandingHeader />
       <main id="main" tabIndex={-1} className="flex-1 outline-none">
         <Hero />
+        <HowItWorks />
         <Features />
         <WhyDifferent />
         <ClosingCta />
@@ -35,6 +37,7 @@ export function LandingPage() {
 }
 
 const sectionLinks = [
+  { href: '#how', label: 'How it works' },
   { href: '#features', label: 'What it does' },
   { href: '#why', label: 'Why SettleUp' },
 ]
