@@ -8,8 +8,9 @@ import { useDocumentTitle } from '../../lib/useDocumentTitle'
 import { Hero } from './Hero'
 import { HowItWorks } from './HowItWorks'
 
-const FRONTEND_REPO = 'https://github.com/ishikabarnwal/settleup-frontend'
-const BACKEND_REPO = 'https://github.com/ishikabarnwal/settleup-backend'
+const REPO = 'https://github.com/ishikabarnwal/settleup-backend'
+const FRONTEND_REPO = `${REPO}/tree/main/frontend`
+const BACKEND_REPO = `${REPO}/tree/main/backend`
 
 /** What signed-out visitors see at "/": what SettleUp is, before asking them to sign up. */
 export function LandingPage() {
@@ -239,7 +240,7 @@ function LandingFooter() {
           <Link to="/register" className="hover:text-white">
             Sign up
           </Link>
-          <a href={FRONTEND_REPO} className="hover:text-white">
+          <a href={REPO} className="hover:text-white">
             Source code
           </a>
         </nav>
