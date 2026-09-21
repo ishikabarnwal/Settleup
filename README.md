@@ -1,33 +1,35 @@
 # SettleUp
 
-A shared expense tracker: create groups, add expenses split equally, by exact amounts or by percentage, see who owes whom, and settle up in as few payments as possible.
+A shared expense tracker. Create groups, split expenses equally, by exact amount, or by percentage, and see the minimum set of payments needed to settle every balance.
 
-**Live app:** https://thesettleup.vercel.app  
-**API:** https://settleup-api-89kg.onrender.com (health check at [`/health`](https://settleup-api-89kg.onrender.com/health))
+**Live app:** https://thesettleup.vercel.app
+**API:** https://settleup-api-89kg.onrender.com ([health check](https://settleup-api-89kg.onrender.com/health))
 
-This is a monorepo with two independent projects:
+## Structure
 
-| Folder | What it is | Stack |
-|---|---|---|
-| [`backend/`](backend) | The REST API | Java 17, Spring Boot, PostgreSQL |
-| [`frontend/`](frontend) | The web app | React, TypeScript, Vite |
+Monorepo, two independent projects:
 
-Each folder has its own README with the full details: [backend/README.md](backend/README.md) and [frontend/README.md](frontend/README.md).
+| Folder | Stack |
+|---|---|
+| [`backend/`](backend) | Java 17, Spring Boot, PostgreSQL |
+| [`frontend/`](frontend) | React, TypeScript, Vite |
 
-## Running it locally
+Full details in each folder's own README: [backend/README.md](backend/README.md), [frontend/README.md](frontend/README.md).
 
-You need Java 17+, Node 20+ and Docker.
+## Running locally
 
-Start the API with an in-memory database (no Docker needed for this):
+Requires Java 17+, Node 20+, and Docker.
+
+Start the API against an in-memory database:
 
 ```bash
 cd backend
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-On Windows use `mvnw.cmd` instead of `./mvnw`. The API serves on `http://localhost:8080`. To run it against PostgreSQL instead, see [backend/README.md](backend/README.md#using-postgresql).
+(Windows: use `mvnw.cmd`.) Serves on `http://localhost:8080`. For PostgreSQL instead, see [backend/README.md](backend/README.md#using-postgresql).
 
-In a second terminal, start the web app:
+In a second terminal:
 
 ```bash
 cd frontend
@@ -35,67 +37,63 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`. The dev server forwards `/api` calls to the backend on port 8080, so no extra setup is needed.
-
-To try it without running anything, use the live app at https://thesettleup.vercel.app.
+Open `http://localhost:5173` — the dev server proxies `/api` to port 8080, no extra config needed.
 
 ## Tests
 
 ```bash
-(cd backend && ./mvnw verify)      # needs Docker running (Testcontainers)
-(cd frontend && npm test)          # unit tests
-(cd frontend && npm run test:e2e)  # end-to-end, needs the backend running
+(cd backend && ./mvnw verify)      # needs Docker (Testcontainers)
+(cd frontend && npm test)          # unit
+(cd frontend && npm run test:e2e)  # e2e, needs the backend running
 ```
 
 ## Deployment
 
-The API and its PostgreSQL database run on [Render](https://render.com). The web app runs on [Vercel](https://vercel.com).
+API and database on [Render](https://render.com), frontend on [Vercel](https://vercel.com).
 
-| | Live URL |
+| | URL |
 |---|---|
-| Web app (Vercel) | https://thesettleup.vercel.app |
-| API (Render) | https://settleup-api-89kg.onrender.com |
-| API health check | https://settleup-api-89kg.onrender.com/health |
+| Web app | https://thesettleup.vercel.app |
+| API | https://settleup-api-89kg.onrender.com |
+| Health check | https://settleup-api-89kg.onrender.com/health |
 
-### Backend on Render
+### Backend
 
-[`render.yaml`](render.yaml) is a Render Blueprint that defines both the database (`settleup-db`) and the API (`settleup-api`). The API is built from [`backend/Dockerfile`](backend/Dockerfile) and started with the `prod` profile, which takes every setting from the environment. If anything is missing, the app stops at startup and names what it needs.
+[`render.yaml`](render.yaml) defines both the database (`settleup-db`) and the API (`settleup-api`) as a Render Blueprint. The API builds from [`backend/Dockerfile`](backend/Dockerfile) and runs under the `prod` profile, which reads every setting from the environment — if anything required is missing, the app refuses to start and says what's absent.
 
-1. In Render, choose **New > Blueprint** and pick this repository.
-2. Render asks for `CORS_ALLOWED_ORIGINS`. Enter the frontend's address, scheme and host only, with no trailing path. For the live site that's `https://thesettleup.vercel.app`.
-3. Everything else is filled in automatically: the database settings come from `settleup-db`, and `JWT_SECRET` is generated once and kept.
+Deploy: **New → Blueprint** in Render, select this repository. When it asks for `CORS_ALLOWED_ORIGINS`, give the frontend's origin (scheme + host, no path) — `https://thesettleup.vercel.app` for the live site.
 
-| Variable | Set by |
+| Variable | Source |
 |---|---|
-| `CORS_ALLOWED_ORIGINS` | **You.** The Vercel URL, comma separated if there's more than one (e.g. a custom domain as well). |
-| `SPRING_PROFILES_ACTIVE` | `render.yaml` (`prod`) |
-| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` | `render.yaml`, from the database |
-| `JWT_SECRET` | `render.yaml`, generated by Render. Changing it later signs everyone out. |
-| `API_DOCS_ENABLED` | `render.yaml` (`false`). Set it to `true` to publish the Swagger UI. |
-| `PORT` | Render itself |
+| `CORS_ALLOWED_ORIGINS` | You provide this |
+| `SPRING_PROFILES_ACTIVE` | `render.yaml` → `prod` |
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` | `render.yaml`, from `settleup-db` |
+| `JWT_SECRET` | Generated once by Render; rotating it signs everyone out |
+| `API_DOCS_ENABLED` | `render.yaml` → `false`; set `true` to expose Swagger UI |
+| `PORT` | Render |
 
-The API redeploys only when something under `backend/` changes. Health checks use `/health`.
+The API redeploys only when `backend/` changes.
 
-### Frontend on Vercel
+### Frontend
 
-Import the repository in Vercel with these settings:
+Import the repo in Vercel with:
 
 | Setting | Value |
 |---|---|
 | Root Directory | `frontend` |
-| Framework Preset | Vite |
-| Build Command | `npm run build` (the default) |
-| Output Directory | `dist` (the default) |
-| Environment variable `VITE_API_URL` | The Render API's URL. For the live site that's `https://settleup-api-89kg.onrender.com`. |
+| Framework | Vite (auto-detected) |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| `VITE_API_URL` | The Render API URL — `https://settleup-api-89kg.onrender.com` for the live site |
 
-`VITE_API_URL` is compiled into the build, so changing it needs a redeploy. [`frontend/vercel.json`](frontend/vercel.json) sends every path to the app, so reloading a page like `/groups/12` doesn't 404.
+`VITE_API_URL` is baked in at build time, so changing it requires a redeploy. [`frontend/vercel.json`](frontend/vercel.json) routes all paths to the app so client-side routes survive a page reload.
 
-### Things to know
+### Notes
 
-- **The two URLs depend on each other.** Render needs the Vercel URL for CORS, and Vercel needs the Render URL. Deploy Render first with the Vercel URL you expect, deploy Vercel, then correct `CORS_ALLOWED_ORIGINS` in Render if the real URL differs. Render restarts the API when you save.
-- **Only the listed origins work.** Vercel preview deployments get their own URLs, so their API calls are blocked unless those URLs are added to `CORS_ALLOWED_ORIGINS`.
-- **Free plans have limits.** A free Render web service sleeps after about 15 minutes without traffic, and the first request after that waits while it starts up again (up to a minute). Render's free PostgreSQL databases expire after a limited time. Check Render's current terms, and upgrade the database before relying on the data.
+Render and Vercel each need the other's URL — deploy Render first with the expected Vercel URL, deploy Vercel, then correct `CORS_ALLOWED_ORIGINS` on Render if it differs (saving restarts the API). Vercel preview deployments get their own URLs and are blocked by CORS unless added explicitly.
+
+Free-tier limits apply: the Render web service sleeps after ~15 minutes idle (first request after that can take up to a minute), and Render's free PostgreSQL databases expire after a fixed window — don't treat the data as permanent.
 
 ## History
 
-The two halves started out as separate repositories and were merged here with their full commit history. The old `settleup-frontend` repository is archived and read-only.
+Backend and frontend started as separate repositories and were merged here with full commit history intact. The old `settleup-frontend` repository is archived.
