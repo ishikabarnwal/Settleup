@@ -22,8 +22,11 @@ Sensitive values are provided through environment variables.
 | `DB_PASSWORD` | No | `settleup` |
 | `CORS_ALLOWED_ORIGINS` | No | `http://localhost:5173` |
 | `API_DOCS_ENABLED` | No | `true` |
+| `PORT` | No | `8080` |
 
 \* `JWT_SECRET` is required when running with PostgreSQL and must be at least 32 characters long.
+
+The defaults above are for local development. In production the app runs with the `prod` profile (`SPRING_PROFILES_ACTIVE=prod`, which the Dockerfile sets), and that profile has no defaults at all. It reads the database from `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME` and `DB_PASSWORD`, and it also needs `JWT_SECRET` and `CORS_ALLOWED_ORIGINS`. If any of these is missing or blank, the app stops at startup and names each one that's missing. API docs default to off there. Deployment is covered in the [top-level README](../README.md#deployment).
 
 `CORS_ALLOWED_ORIGINS` is a comma separated list of frontend origins allowed to call the API from a browser (for example `https://settleup.example.com,http://localhost:5173`). The default covers the frontend's local dev server.
 

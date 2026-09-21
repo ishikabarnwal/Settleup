@@ -1,0 +1,61 @@
+# Render Blueprint for the API and its database. The frontend is on Vercel.
+# To use it: Render dashboard > New > Blueprint > pick this repo.
+# The README's Deployment section walks through it.
+
+databases:
+  - name: settleup-db
+    plan: free
+    region: singapore
+    postgresMajorVersion: "17"
+    databaseName: settleup
+    user: settleup
+    # Reachable only from services on Render, not from the internet.
+    ipAllowList: []
+
+services:
+  - type: web
+    name: settleup-api
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    # Only redeploy the API when something under backend/ changes.
+    buildFilter:
+      paths:
+        - backend/**
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DB_HOST
+        fromDatabase:
+          name: settleup-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: settleup-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: settleup-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: settleup-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: settleup-db
+          property: password
+      # Render generates a random 256-bit value once and keeps it. Changing it
+      # later signs everyone out.
+      - key: JWT_SECRET
+        generateValue: true
+      # The Vercel site's origin, e.g. https://settleup.vercel.app (no trailing
+      # path). Render asks for it when the Blueprint is created. Comma separate
+      # to add more, such as a custom domain.
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: API_DOCS_ENABLED
+        value: "false"
