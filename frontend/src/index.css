@@ -1,0 +1,191 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+
+/*
+ * SettleUp design tokens. Components use the utilities Tailwind generates
+ * from these (bg-surface, text-plum, rounded-card, shadow-card ...), never raw
+ * values, so the whole app changes together.
+ *
+ * Colour roles
+ *   plum    #451952  primary. The main action on light backgrounds, links, focus.
+ *   apricot #F39F5A  secondary. The main action on dark backgrounds, small highlights.
+ *                    Plum is invisible on ink (1.2:1), apricot reads well (7.9:1).
+ *   ink     #1D1A39  base for every dark area: nav, hero, footer.
+ *   blush   #E8BCB9  the light areas are tints of it; there is no pure white.
+ *   wine, rose       supporting tones: avatars, badges, and rose for "owes".
+ *
+ * Contrast (WCAG): plum 12.3, stone-500 6.5, stone-400 4.7, rose 4.9 on canvas.
+ */
+@theme {
+  --color-ink: #1d1a39;
+  --color-plum: #451952;
+  --color-wine: #662549;
+  --color-rose: #ae445a;
+  --color-apricot: #f39f5a;
+  --color-blush: #e8bcb9;
+
+  /* Light surfaces, all tinted from blush. */
+  --color-canvas: #f9efee; /* page background */
+  --color-surface: #fdfaf9; /* cards, inputs, dialogs */
+  --color-sunken: #f6e6e4; /* tracks, chips, segmented controls */
+
+  /*
+   * The neutral scale, warmed towards blush at the light end and towards ink at
+   * the dark end. Overriding stone means every grey in the app is on-palette.
+   */
+  --color-stone-50: #fbf4f3;
+  --color-stone-100: #f6e6e4;
+  --color-stone-200: #eed9d6;
+  --color-stone-300: #e2c4c1;
+  --color-stone-400: #7a6574;
+  --color-stone-500: #625165;
+  --color-stone-600: #4d3f55;
+  --color-stone-700: #3a3049;
+  --color-stone-800: #2a2442;
+  --color-stone-900: #211d3c;
+  --color-stone-950: #1d1a39;
+
+  /* Money direction: rose for owing keeps it on-palette; green reads as "gets money back". */
+  --color-owes: var(--color-rose);
+  --color-owed: #047857;
+
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+
+  /*
+   * Radius scale, one step per kind of thing, so nested shapes line up:
+   * controls (buttons, inputs) sit inside cards, cards inside panels.
+   * Pills (rounded-full) are for the nav, avatars and small status chips.
+   */
+  --radius-control: 0.75rem;
+  --radius-card: 1.25rem;
+  --radius-panel: 1.75rem;
+
+  /* Depth instead of outlines. Tinted with ink so shadows sit warm on blush. */
+  --shadow-card: 0 1px 2px rgb(29 26 57 / 0.05), 0 6px 20px -8px rgb(29 26 57 / 0.12);
+  --shadow-raised: 0 1px 2px rgb(29 26 57 / 0.06), 0 16px 40px -16px rgb(29 26 57 / 0.26);
+  --shadow-float: 0 24px 64px -20px rgb(29 26 57 / 0.55);
+
+  --animate-fade-in: fade-in 150ms ease-out;
+  --animate-pop-in: pop-in 180ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  --animate-drift: drift 7s ease-in-out infinite;
+  --animate-travel-across: travel-across 3.2s ease-in-out infinite;
+  --animate-travel-down: travel-down 3.2s ease-in-out infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+  }
+
+  /* A dot running along the connectors in How it works. */
+  @keyframes travel-across {
+    from {
+      left: 0;
+      opacity: 0;
+    }
+    15%,
+    85% {
+      opacity: 1;
+    }
+    to {
+      left: calc(100% - 1rem);
+      opacity: 0;
+    }
+  }
+
+  @keyframes travel-down {
+    from {
+      top: 0;
+      opacity: 0;
+    }
+    15%,
+    85% {
+      opacity: 1;
+    }
+    to {
+      top: calc(100% - 1rem);
+      opacity: 0;
+    }
+  }
+
+  @keyframes drift {
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+}
+
+/*
+ * The one gradient left: a soft glow of plum and apricot on ink, for the hero
+ * only. Every other dark area is plain ink.
+ */
+@utility bg-hero-glow {
+  background-color: var(--color-ink);
+  background-image:
+    radial-gradient(60% 70% at 85% 10%, rgb(243 159 90 / 0.16), transparent 70%),
+    radial-gradient(55% 60% at 10% 100%, rgb(69 25 82 / 0.85), transparent 70%);
+}
+
+/* Page width and side margins shared by every page, so nothing runs edge to edge. */
+@utility page-container {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 72rem;
+  padding-inline: 1.5rem;
+
+  @media (width >= 40rem) {
+    padding-inline: 2rem;
+  }
+  @media (width >= 64rem) {
+    padding-inline: 3rem;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-canvas text-stone-900 antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-plum;
+  }
+
+  /* Section links on the landing page glide rather than jump, unless motion is turned down. */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Number inputs: no spinners, amounts are typed. */
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+}
