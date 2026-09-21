@@ -21,10 +21,15 @@ services:
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /health
-    # Only redeploy the API when something under backend/ changes.
+    # Only redeploy the API when something under backend/ changes, and not for
+    # Markdown alone. Paths are from the repo root, and ignoredPaths wins over
+    # paths, so a commit that only touches READMEs doesn't deploy; one that also
+    # changes code does. Manual deploys aren't affected.
     buildFilter:
       paths:
         - backend/**
+      ignoredPaths:
+        - backend/**/*.md
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
