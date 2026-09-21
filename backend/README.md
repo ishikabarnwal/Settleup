@@ -2,6 +2,8 @@
 
 A REST API for **splitting shared expenses and managing group balances**. Users can create groups, add expenses, track who owes whom, and record settlements.
 
+This is the backend half of the SettleUp monorepo. The web app that uses it lives in [`../frontend`](../frontend). All commands below are run from this `backend/` folder.
+
 ## Requirements
 
 - Java 17+

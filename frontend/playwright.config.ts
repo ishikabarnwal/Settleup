@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 /**
  * End-to-end tests drive the real app in a browser against a real backend.
- * Start settleup-backend on http://localhost:8080 first. The tests run against
+ * Start the backend (../backend) on http://localhost:8080 first. The tests run against
  * the production build (vite preview on port 4173), so they check what actually
  * ships and aren't disturbed by the dev server's hot reloading.
  */

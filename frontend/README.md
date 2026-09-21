@@ -2,7 +2,7 @@
 
 The web app for **SettleUp**, a shared expense tracker: create groups, add expenses split equally, by exact amounts or by percentage, see who owes whom, and settle up in as few payments as possible.
 
-It talks to [settleup-backend](https://github.com/ishikabarnwal/settleup-backend), a Spring Boot REST API.
+It talks to the Spring Boot REST API in [`../backend`](../backend), the other half of this monorepo. All commands below are run from this `frontend/` folder.
 
 ## Stack
 
@@ -14,7 +14,7 @@ It talks to [settleup-backend](https://github.com/ishikabarnwal/settleup-backend
 
 ## Getting started
 
-You need Node 20+ and the backend running locally (see its README; by default it serves on `http://localhost:8080`).
+You need Node 20+ and the backend running locally (see [`../backend/README.md`](../backend/README.md); by default it serves on `http://localhost:8080`).
 
 ```bash
 npm install

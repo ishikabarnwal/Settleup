@@ -1,0 +1,6 @@
+# Each project has its own .gitignore in backend/ and frontend/.
+# These cover things that can turn up at the top level.
+.DS_Store
+.idea/
+.vscode/
+.env
