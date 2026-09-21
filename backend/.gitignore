@@ -37,3 +37,6 @@ build/
 .env.local
 *.env
 !.env.example
+
+### Personal notes (not for the public repo) ###
+Backend Project.txt
