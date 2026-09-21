@@ -42,6 +42,8 @@ VITE_API_URL=https://settleup-api.example.com npm run build
 
 The browser then calls the backend directly, so the backend has to allow this site's origin. Set `CORS_ALLOWED_ORIGINS` on the backend to include it (e.g. `https://settleup.example.com`). Vite reads `VITE_` variables at build time, so changing the URL means rebuilding.
 
+**Vercel.** The live site is hosted on Vercel; the setup is in the [top-level README](../README.md#deployment). `vercel.json` sends every path that isn't a real file to `index.html`, so reloading a page like `/groups/12` loads the app instead of Vercel's 404.
+
 ## Scripts
 
 | Command | |
