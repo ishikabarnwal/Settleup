@@ -8,7 +8,7 @@ import { useDocumentTitle } from '../../lib/useDocumentTitle'
 import { Hero } from './Hero'
 import { HowItWorks } from './HowItWorks'
 
-const REPO = 'https://github.com/ishikabarnwal/settleup-backend'
+const REPO = 'https://github.com/ishikabarnwal/Settleup'
 const FRONTEND_REPO = `${REPO}/tree/main/frontend`
 const BACKEND_REPO = `${REPO}/tree/main/backend`
 

@@ -24,7 +24,7 @@ test('visitors see what SettleUp is before being asked to sign up', async ({ pag
   await expect(footer).toContainText(`© ${new Date().getFullYear()} SettleUp`)
   await expect(footer.getByRole('link', { name: 'Source code' })).toHaveAttribute(
     'href',
-    'https://github.com/ishikabarnwal/settleup-backend',
+    'https://github.com/ishikabarnwal/Settleup',
   )
 })
 
