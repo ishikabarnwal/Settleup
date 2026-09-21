@@ -4,6 +4,8 @@ A REST API for **splitting shared expenses and managing group balances**. Users 
 
 This is the backend half of the SettleUp monorepo. The web app that uses it lives in [`../frontend`](../frontend). All commands below are run from this `backend/` folder.
 
+**Live API:** https://settleup-api-89kg.onrender.com, with a health check at [`/health`](https://settleup-api-89kg.onrender.com/health). It serves the live app at https://thesettleup.vercel.app.
+
 ## Requirements
 
 - Java 17+
@@ -48,7 +50,7 @@ Windows:
 mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-API: `http://localhost:8080`
+API: `http://localhost:8080` (the live one is at `https://settleup-api-89kg.onrender.com`)
 
 > H2 data is cleared whenever the application restarts.
 
@@ -81,7 +83,7 @@ Tests run against a real PostgreSQL 17 database that [Testcontainers](https://te
 
 Interactive docs (Swagger UI) are served at `http://localhost:8080/swagger-ui.html`, with the raw OpenAPI spec at `/v3/api-docs`. Neither needs a token. To try protected endpoints from the page, call register or login, click **Authorize** and paste the token.
 
-Set `API_DOCS_ENABLED=false` to turn both off, for example in production.
+Set `API_DOCS_ENABLED=false` to turn both off, for example in production. They're off on the live API, so there they return 404.
 
 ## API Overview
 
@@ -216,6 +218,8 @@ Balances are never stored. They're recalculated from the remaining expenses and 
 - Because a removed member has to leave at zero, an expense or settlement that involves someone who has left can't be deleted (400). Deleting it would give them a balance in a group they're no longer part of.
 
 ## Example
+
+These run against a local server. To try them on the live API, replace `http://localhost:8080` with `https://settleup-api-89kg.onrender.com`, and use the group id that "Create a group" returns instead of `1`.
 
 ```bash
 # Register

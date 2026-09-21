@@ -2,6 +2,9 @@
 
 A shared expense tracker: create groups, add expenses split equally, by exact amounts or by percentage, see who owes whom, and settle up in as few payments as possible.
 
+**Live app:** https://thesettleup.vercel.app  
+**API:** https://settleup-api-89kg.onrender.com (health check at [`/health`](https://settleup-api-89kg.onrender.com/health))
+
 This is a monorepo with two independent projects:
 
 | Folder | What it is | Stack |
@@ -34,6 +37,8 @@ npm run dev
 
 Open `http://localhost:5173`. The dev server forwards `/api` calls to the backend on port 8080, so no extra setup is needed.
 
+To try it without running anything, use the live app at https://thesettleup.vercel.app.
+
 ## Tests
 
 ```bash
@@ -46,12 +51,18 @@ Open `http://localhost:5173`. The dev server forwards `/api` calls to the backen
 
 The API and its PostgreSQL database run on [Render](https://render.com). The web app runs on [Vercel](https://vercel.com).
 
+| | Live URL |
+|---|---|
+| Web app (Vercel) | https://thesettleup.vercel.app |
+| API (Render) | https://settleup-api-89kg.onrender.com |
+| API health check | https://settleup-api-89kg.onrender.com/health |
+
 ### Backend on Render
 
 [`render.yaml`](render.yaml) is a Render Blueprint that defines both the database (`settleup-db`) and the API (`settleup-api`). The API is built from [`backend/Dockerfile`](backend/Dockerfile) and started with the `prod` profile, which takes every setting from the environment. If anything is missing, the app stops at startup and names what it needs.
 
 1. In Render, choose **New > Blueprint** and pick this repository.
-2. Render asks for `CORS_ALLOWED_ORIGINS`. Enter the frontend's address, such as `https://settleup.vercel.app` (scheme and host only, no trailing path).
+2. Render asks for `CORS_ALLOWED_ORIGINS`. Enter the frontend's address, scheme and host only, with no trailing path. For the live site that's `https://thesettleup.vercel.app`.
 3. Everything else is filled in automatically: the database settings come from `settleup-db`, and `JWT_SECRET` is generated once and kept.
 
 | Variable | Set by |
@@ -75,7 +86,7 @@ Import the repository in Vercel with these settings:
 | Framework Preset | Vite |
 | Build Command | `npm run build` (the default) |
 | Output Directory | `dist` (the default) |
-| Environment variable `VITE_API_URL` | The Render API's URL, e.g. `https://settleup-api.onrender.com` |
+| Environment variable `VITE_API_URL` | The Render API's URL. For the live site that's `https://settleup-api-89kg.onrender.com`. |
 
 `VITE_API_URL` is compiled into the build, so changing it needs a redeploy. [`frontend/vercel.json`](frontend/vercel.json) sends every path to the app, so reloading a page like `/groups/12` doesn't 404.
 

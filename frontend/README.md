@@ -4,6 +4,8 @@ The web app for **SettleUp**, a shared expense tracker: create groups, add expen
 
 It talks to the Spring Boot REST API in [`../backend`](../backend), the other half of this monorepo. All commands below are run from this `frontend/` folder.
 
+**Live app:** https://thesettleup.vercel.app, talking to the API at https://settleup-api-89kg.onrender.com.
+
 ## Stack
 
 - React 19 + TypeScript, built with Vite
@@ -21,7 +23,7 @@ npm install
 npm run dev
 ```
 
-The app runs on http://localhost:5173.
+The app runs on http://localhost:5173. The live version is at https://thesettleup.vercel.app.
 
 ## Pointing it at a backend
 
@@ -42,7 +44,7 @@ VITE_API_URL=https://settleup-api.example.com npm run build
 
 The browser then calls the backend directly, so the backend has to allow this site's origin. Set `CORS_ALLOWED_ORIGINS` on the backend to include it (e.g. `https://settleup.example.com`). Vite reads `VITE_` variables at build time, so changing the URL means rebuilding.
 
-**Vercel.** The live site is hosted on Vercel; the setup is in the [top-level README](../README.md#deployment). `vercel.json` sends every path that isn't a real file to `index.html`, so reloading a page like `/groups/12` loads the app instead of Vercel's 404.
+**Vercel.** The live site, https://thesettleup.vercel.app, is hosted on Vercel and built with `VITE_API_URL=https://settleup-api-89kg.onrender.com`. The setup is in the [top-level README](../README.md#deployment). `vercel.json` sends every path that isn't a real file to `index.html`, so reloading a page like `/groups/12` loads the app instead of Vercel's 404.
 
 ## Scripts
 
